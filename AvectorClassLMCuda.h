@@ -42,9 +42,7 @@
 #include <cusparse_v2.h>
 #include <random>
 #include <iostream>
-
-#define RC_INT int
-
+#include "RC_Types.h"
 
 #ifndef AVECTORCLASSLMCuda_
 #define AVECTORCLASSLMCuda_

@@ -40,6 +40,10 @@
 #
 #############################################################################
 */
+
+// Make compatible with the GPU
+/*
+
 #include <std::vector>
 
 #ifndef SUBSPACE_ITERATION_
@@ -299,3 +303,5 @@ void orthogonalizeVarray(std::vector< Vtype >& vArray)
 };
 
 #endif
+
+*/

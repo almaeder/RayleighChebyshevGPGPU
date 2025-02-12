@@ -7,17 +7,17 @@
 
    This routine is a version of RayleighChebyshev designed for
    linear operator classes whose instances require a large memory
-   allocation. To take advantage of multi-threading using this version
+   allocation. To take advantage of accelerators using this version
    multiple instances of the linear operator are not created; just a
-   single instance. It is assumed that, if available, the apply(std::vector<Vtype>& Varray)
-   member function takes advantage of multi-threading.
+   single instance. It is assumed that, if available, the apply
+   member function takes advantage of acclerators.
 
    The routine is designed for both real symmetric and
    complex Hermitian operators.
 
    The eigenvalues are returned in a std::vector<double> instance
    while the eigenvectors are internally allocated and returned in
-   a std::vector<Vtype> class instance.
+   a Atype class instance.
 
    To use with complex Hermitian operators the template parameter
    specification
@@ -127,11 +127,6 @@
 
    External dependencies: Default use of LAPACK from SCC::LapackInterface component
 
-   LAPACK is necessary for complex Hermitian operators, for real symmetric
-   operators one can remove dependency on LAPACK and the SCC::LapackInterface component
-   by specifying the compiler define RC_WITHOUT_LAPACK_.
-   Reference:
-
    Christopher R. Anderson, "A Rayleigh-Chebyshev procedure for finding
    the smallest eigenvalues and associated eigenvectors of large sparse
    Hermitian matrices" Journal of Computational Physics,
@@ -168,22 +163,17 @@
 #include <map>
 #include <algorithm>
 
-#ifndef RC_WITHOUT_LAPACK_
 #include "SCC_LapackMatrix.h"
 #include "SCC_LapackMatrixRoutines.h"
 
 #include "SCC_LapackMatrixCmplx16.h"
 #include "SCC_LapackMatrixRoutinesCmplx16.h"
-#endif
 
-#include "RCarray2d.h"
 #include "RC_Types.h"
 
 #include "LanczosCpoly.h"               // Chebyshev polynomial based filter polynomial
 #include "LanczosCpolyOperatorLMCuda.h" // Chebyshev polynomial based filter polynomial operator
 #include "LanczosMaxMinFinder.h"
-
-#include "JacobiDiagonalizer.h"
 
 #include <cusolverDn.h>
 #include <cuda_runtime.h>
@@ -200,12 +190,6 @@
 #define DEFAULT_MAX_INNER_LOOP_COUNT 10000
 #define DEFAULT_POLY_DEGREE_MAX 200
 #define DEFAULT_FILTER_REPETITION_COUNT 1
-
-#ifndef RC_WITHOUT_LAPACK_
-#define DEFAULT_USE_JACOBI_FLAG false
-#else
-#define DEFAULT_USE_JACOBI_FLAG true
-#endif
 
 #define RAYLEIGH_CHEBYSHEV_SMALL_TOL_ 1.0e-11
 
@@ -281,8 +265,6 @@ public:
         verboseFlag = false;
         eigDiagnosticsFlag = false;
         verboseSubspaceFlag = false;
-        jacobiMethod.tol = JACOBI_TOL;
-        useJacobiFlag = DEFAULT_USE_JACOBI_FLAG;
         minIntervalPolyDegreeMax = DEFAULT_POLY_DEGREE_MAX;
         filterRepetitionCount = DEFAULT_FILTER_REPETITION_COUNT;
         minEigValueEst = 0.0;
@@ -521,16 +503,6 @@ public:
         return lanczosMaxMinFinder.getIterationCount();
     }
 
-    void setUseJacobi(bool val)
-    {
-        useJacobiFlag = val;
-    }
-
-    void clearUseJacobi()
-    {
-        useJacobiFlag = false;
-    }
-
     std::vector<double> getEigVectorResiduals() const
     {
         return eigVecResiduals;
@@ -574,69 +546,53 @@ public:
 
         RC_INT rowSize = VtAV.getRowSize();
 
-        if (useJacobiFlag)
+        /////////////////////////////////////////////////////////////////////////////
+        //     Calculation using LAPACK
+        ////////////////////////////////////////////////////////////////////////////
+        RC_INT colSize = VtAV.getColSize();
+
+        using MatrixType = typename std::conditional<std::is_same<Dtype, double>::value,
+                                                        SCC::LapackMatrix,
+                                                        SCC::LapackMatrixCmplx16>::type;
+
+        MatrixType VtAVmatrix;
+        MatrixType VtAVeigVectorMatrix;
+
+        VtAVmatrix.initialize(rowSize, colSize);
+        VtAVeigVectorMatrix.initialize(rowSize, colSize);
+
+        for (RC_INT i = 0; i < rowSize; i++)
         {
-            // TODO: make work with complex numbers
-            // jacobiMethod.setSortIncreasing(true);
-            // jacobiMethod.setIOdataRowStorage(false);
-            // jacobiMethod.getEigenSystem(VtAV.getDataPointer(), rowSize, &VtAVeigValue[0], VtAVeigVector.getDataPointer());
+            for (RC_INT j = 0; j < colSize; j++)
+            {
+                VtAVmatrix(i, j) = VtAV(i, j);
+                VtAVeigVectorMatrix(i, j) = VtAVeigVector(i, j);
+            }
+        }
+
+        VtAVeigValue.resize(colSize, 0.0);
+        if constexpr (std::is_same<Dtype, double>::value)
+        {
+            dsyev.computeEigensystem(VtAVmatrix, VtAVeigValue, VtAVeigVectorMatrix);
+        }
+        else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
+        {
+            zhpevx.createEigensystem(VtAVmatrix, VtAVeigValue, VtAVeigVectorMatrix);
         }
         else
-#ifndef RC_WITHOUT_LAPACK_
         {
-            /////////////////////////////////////////////////////////////////////////////
-            //     Calculation using LAPACK
-            ////////////////////////////////////////////////////////////////////////////
-            RC_INT colSize = VtAV.getColSize();
+            static_assert(std::is_same<Dtype, double>::value || std::is_same<Dtype, std::complex<double>>::value, "Unsupported Dtype");
+        }
 
-            using MatrixType = typename std::conditional<std::is_same<Dtype, double>::value,
-                                                         SCC::LapackMatrix,
-                                                         SCC::LapackMatrixCmplx16>::type;
-
-            MatrixType VtAVmatrix;
-            MatrixType VtAVeigVectorMatrix;
-
-            VtAVmatrix.initialize(rowSize, colSize);
-            VtAVeigVectorMatrix.initialize(rowSize, colSize);
-
-            for (RC_INT i = 0; i < rowSize; i++)
+        for (RC_INT i = 0; i < rowSize; i++)
+        {
+            for (RC_INT j = 0; j < colSize; j++)
             {
-                for (RC_INT j = 0; j < colSize; j++)
-                {
-                    VtAVmatrix(i, j) = VtAV(i, j);
-                    VtAVeigVectorMatrix(i, j) = VtAVeigVector(i, j);
-                }
-            }
-
-            VtAVeigValue.resize(colSize, 0.0);
-            if constexpr (std::is_same<Dtype, double>::value)
-            {
-                dsyev.computeEigensystem(VtAVmatrix, VtAVeigValue, VtAVeigVectorMatrix);
-            }
-            else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
-            {
-                zhpevx.createEigensystem(VtAVmatrix, VtAVeigValue, VtAVeigVectorMatrix);
-            }
-            else
-            {
-                static_assert(std::is_same<Dtype, double>::value || std::is_same<Dtype, std::complex<double>>::value, "Unsupported Dtype");
-            }
-
-            for (RC_INT i = 0; i < rowSize; i++)
-            {
-                for (RC_INT j = 0; j < colSize; j++)
-                {
-                    VtAVeigVectorMatrix(i, j) = VtAVeigVector(i, j) = VtAVeigVectorMatrix(i, j);
-                }
+                VtAVeigVectorMatrix(i, j) = VtAVeigVector(i, j) = VtAVeigVectorMatrix(i, j);
             }
         }
-#else
-        {
-            std::string errMsg = "\nXXXX RayleighChebyshev Error XXXX";
-            errMsg += "\nUse of Lapack solvers not supported without SCC::LapackInterface components\n";
-            throw std::runtime_error(errMsg);
-        }
-#endif
+
+
 
         VtAVeigVector.host_to_device();
     }
@@ -2409,15 +2365,9 @@ protected:
     LanczosCpoly cPoly;
     LanczosCpolyOperatorLMCuda<Atype, Otype> cOp;
 
-    JacobiDiagonalizer jacobiMethod;
-    bool useJacobiFlag;
-
-#ifndef RC_WITHOUT_LAPACK_
-
     SCC::DSYEV dsyev;
 
     SCC::ZHPEVX zhpevx;
-#endif
 
     double guardValue;              // Value of the guard eigenvalue.
     bool intervalStopConditionFlag; // Converge based on value of guard eigenvalue
@@ -2473,12 +2423,10 @@ protected:
     double *VtAVeigValue_h = NULL;
 };
 
-#undef JACOBI_TOL
 #undef DEFAULT_MAX_INNER_LOOP_COUNT
 #undef RAYLEIGH_CHEBYSHEV_SMALL_TOL_
 #undef DEFAULT_MAX_MIN_TOL
 #undef DEFAULT_POLY_DEGREE_MAX
 #undef DEFAULT_FILTER_REPETITION_COUNT
-#undef DEFAULT_USE_JACOBI_FLAG
 #undef DEFAULT_USE_RESIDUAL_STOP_CONDITION
 #endif

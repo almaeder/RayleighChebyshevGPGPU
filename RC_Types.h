@@ -30,14 +30,14 @@
 #ifndef RC_TYPES_H_
 #define RC_TYPES_H_
 
+#define RC_INT int
+
 class RC_Types
 {
 public:
 
 	enum StopCondition {DEFAULT, COMBINATION, EIGENVALUE_ONLY, RESIDUAL_ONLY};
 };
-
-
 
 
 #endif /* RC_TYPES_H_ */

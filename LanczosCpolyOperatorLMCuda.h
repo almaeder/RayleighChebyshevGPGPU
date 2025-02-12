@@ -106,8 +106,6 @@
 #include "cuda_kernels.h"
 #include "cudaErrchk.h"
 
-#define RC_INT int
-
 #ifndef LANCZOS_C_POLY_OPERATOR_LM_
 #define LANCZOS_C_POLY_OPERATOR_LM_
 
