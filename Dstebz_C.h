@@ -10,7 +10,7 @@
 #define DSTEBZ_RC_
 
 #ifndef RC_WITHOUT_LAPACK_
-#include "LapackInterface/SCC_LapackHeaders.h"
+#include "SCC_LapackHeaders.h"
 #else
 #pragma push_macro("EXTERNAL_LAPACK")
 #undef EXTERNAL_LAPACK
@@ -19,7 +19,7 @@
 //
 // This file contains the header for dstebz.f in the LAPACK library. The external library
 // must be one associated with a 64 bit operating system where Fortran integers are
-// mapped to C++ long.
+// mapped to C++ RC_INT.
 //
 // If the pre-processor directive INTERNAL_LAPACK is defined, then Dstebz_C is
 // a class that encapsulates the f2c translation of the LAPACK routine dstebz.f
@@ -42,7 +42,7 @@
 // The f2c data types and data values were assigned as follows
 //
 // doublereal = double
-// integer    = long
+// integer    = RC_INT
 // ftnlen     = int
 // logical    = bool
 // FALSE_     = false
@@ -78,11 +78,22 @@
 #############################################################################
 */
 
-#ifndef EXTERNAL_LAPACK
-extern "C" int dstebz_(char* range, char* order, long *n, double *vl, double *vu, long *il, long *iu,
-double *abstol, double *d__, double *e, long *m, long *nsplit, double *w, long *iblock,
-long *isplit, double *work, long *iwork, long *info);
-#endif
+#pragma once
+extern "C" {
+    #ifdef USE_MKL
+    #include <mkl_blas.h>
+    #include <mkl_cblas.h>
+    #include <mkl_lapacke.h>
+    #include <mkl_lapack.h>
+    #else
+    #include <blas.h>
+    #include <cblas.h>
+    #include <lapacke.h>
+    #include <lapack.h>
+    #endif
+}
+
+
 
 class Dstebz_C
 {
@@ -101,17 +112,17 @@ Dstebz_C()
 
 /* Table of constant values used by translation */
 
-long c__1;
-long c_n1;
-long c__3;
-long c__2;
-long c__0;
+RC_INT c__1;
+RC_INT c_n1;
+RC_INT c__3;
+RC_INT c__2;
+RC_INT c__0;
 
 //
 
-int dstebz(char range, char order, long *n, double *vl, double *vu, long *il, long *iu,
-double *abstol, double *d__, double *e, long *m, long *nsplit, double *w, long *iblock,
-long *isplit, double *work, long *iwork, long *info)
+int dstebz(char range, char order, RC_INT *n, double *vl, double *vu, RC_INT *il, RC_INT *iu,
+double *abstol, double *d__, double *e, RC_INT *m, RC_INT *nsplit, double *w, RC_INT *iblock,
+RC_INT *isplit, double *work, RC_INT *iwork, RC_INT *info)
 
 /* *********************************************************************** */
 /* > \brief \b DSTEBZ */
@@ -143,11 +154,11 @@ f"> */
 
 /*       .. Scalar Arguments .. */
 /*       CHARACTER          ORDER, RANGE */
-/*       long            IL, INFO, IU, M, N, NSPLIT */
+/*       RC_INT            IL, INFO, IU, M, N, NSPLIT */
 /*       DOUBLE PRECISION   ABSTOL, VL, VU */
 /*       .. */
 /*       .. Array Arguments .. */
-/*       long            IBLOCK( * ), ISPLIT( * ), IWORK( * ) */
+/*       RC_INT            IBLOCK( * ), ISPLIT( * ), IWORK( * ) */
 /*       DOUBLE PRECISION   D( * ), E( * ), W( * ), WORK( * ) */
 /*       .. */
 
@@ -200,7 +211,7 @@ f"> */
 /* > */
 /* > \param[in] N */
 /* > \verbatim */
-/* >          N is long */
+/* >          N is RC_INT */
 /* >          The order of the tridiagonal matrix T.  N >= 0. */
 /* > \endverbatim */
 /* > */
@@ -221,12 +232,12 @@ f"> */
 /* > */
 /* > \param[in] IL */
 /* > \verbatim */
-/* >          IL is long */
+/* >          IL is RC_INT */
 /* > \endverbatim */
 /* > */
 /* > \param[in] IU */
 /* > \verbatim */
-/* >          IU is long */
+/* >          IU is RC_INT */
 /* > */
 /* >          If RANGE='I', the indices (in ascending order) of the */
 /* >          smallest and largest eigenvalues to be returned. */
@@ -261,14 +272,14 @@ f"> */
 /* > */
 /* > \param[out] M */
 /* > \verbatim */
-/* >          M is long */
+/* >          M is RC_INT */
 /* >          The actual number of eigenvalues found. 0 <= M <= N. */
 /* >          (See also the description of INFO=2,3.) */
 /* > \endverbatim */
 /* > */
 /* > \param[out] NSPLIT */
 /* > \verbatim */
-/* >          NSPLIT is long */
+/* >          NSPLIT is RC_INT */
 /* >          The number of diagonal blocks in the matrix T. */
 /* >          1 <= NSPLIT <= N. */
 /* > \endverbatim */
@@ -283,7 +294,7 @@ f"> */
 /* > */
 /* > \param[out] IBLOCK */
 /* > \verbatim */
-/* >          IBLOCK is long array, dimension (N) */
+/* >          IBLOCK is RC_INT array, dimension (N) */
 /* >          At each row/column j where E(j) is zero or small, the */
 /* >          matrix T is considered to split into a block diagonal */
 /* >          matrix.  On exit, if INFO = 0, IBLOCK(i) specifies to which */
@@ -294,7 +305,7 @@ f"> */
 /* > */
 /* > \param[out] ISPLIT */
 /* > \verbatim */
-/* >          ISPLIT is long array, dimension (N) */
+/* >          ISPLIT is RC_INT array, dimension (N) */
 /* >          The splitting points, at which T breaks up into submatrices. */
 /* >          The first submatrix consists of rows/columns 1 to ISPLIT(1), */
 /* >          the second of rows/columns ISPLIT(1)+1 through ISPLIT(2), */
@@ -312,12 +323,12 @@ f"> */
 /* > */
 /* > \param[out] IWORK */
 /* > \verbatim */
-/* >          IWORK is long array, dimension (3*N) */
+/* >          IWORK is RC_INT array, dimension (3*N) */
 /* > \endverbatim */
 /* > */
 /* > \param[out] INFO */
 /* > \verbatim */
-/* >          INFO is long */
+/* >          INFO is RC_INT */
 /* >          = 0:  successful exit */
 /* >          < 0:  if INFO = -i, the i-th argument had an illegal value */
 /* >          > 0:  some or all of the eigenvalues failed to converge or */
@@ -389,7 +400,7 @@ f"> */
 //
 //  If using an external lapack implementation, then just call it directly
 //
-//  The integer data types are being specified as long, thus if this code is
+//  The integer data types are being specified as RC_INT, thus if this code is
 //  used on a 32 bit OS, there may be problems and the argument type may not
 //  be appropriate.
 //
@@ -399,35 +410,35 @@ return dstebz_(rangeArg,orderArg,n,vl, vu,il, iu,abstol, d__,e,m,nsplit,w, ibloc
 #endif
 
     /* System generated locals */
-    long i__1, i__2, i__3;
+    RC_INT i__1, i__2, i__3;
     double d__1, d__2, d__3, d__4, d__5;
 
     /* Builtin functions */
     //double sqrt(double), log(double);
 
     /* Local variables */
-    long j, ib, jb, ie, je, nb;
+    RC_INT j, ib, jb, ie, je, nb;
     double gl;
-    long im, in;
+    RC_INT im, in;
     double gu;
-    long iw;
+    RC_INT iw;
     double wl, wu;
-    long nwl;
+    RC_INT nwl;
     double ulp, wlu, wul;
-    long nwu;
+    RC_INT nwu;
     double tmp1, tmp2;
-    long iend, ioff, iout, itmp1, jdisc;
-    long iinfo;
+    RC_INT iend, ioff, iout, itmp1, jdisc;
+    RC_INT iinfo;
     double atoli;
-    long iwoff;
+    RC_INT iwoff;
     double bnorm;
-    long itmax;
+    RC_INT itmax;
     double wkill, rtoli, tnorm;
-    long ibegin;
-    long irange, idiscl;
+    RC_INT ibegin;
+    RC_INT irange, idiscl;
     double safemn;
-    long idumma[1];
-    long idiscu, iorder;
+    RC_INT idumma[1];
+    RC_INT idiscu, iorder;
     bool ncnvrg;
     double pivmin;
     bool toofew;
@@ -641,7 +652,7 @@ return dstebz_(rangeArg,orderArg,n,vl, vu,il, iu,abstol, d__,e,m,nsplit,w, ibloc
 
 /*        Compute Iteration parameters */
 
-    itmax = (long) ((log(tnorm + pivmin) - log(pivmin)) / log(2.)) + 2;
+    itmax = (RC_INT) ((log(tnorm + pivmin) - log(pivmin)) / log(2.)) + 2;
     if (*abstol <= 0.) {
         atoli = ulp * tnorm;
     } else {
@@ -825,7 +836,7 @@ return dstebz_(rangeArg,orderArg,n,vl, vu,il, iu,abstol, d__,e,m,nsplit,w, ibloc
 
 /*           Compute Eigenvalues */
 
-        itmax = (long) ((log(gu - gl + pivmin) - log(pivmin)) / log(2.)
+        itmax = (RC_INT) ((log(gu - gl + pivmin) - log(pivmin)) / log(2.)
             ) + 2;
         dlaebz_(&c__2, &itmax, &in, &in, &c__1, &nb, &atoli, &rtoli, &
             pivmin, &d__[ibegin], &e[ibegin], &work[ibegin], idumma, &
@@ -994,7 +1005,7 @@ L70:
 
 // Transformed c translations of XERBLA, DLAMCH and LSAME
 
-int xerbla_(const char* A, long* I2, int)
+int xerbla_(const char* A, RC_INT* I2, int)
 {
 	std::stringstream errorStream;
 	errorStream << "** On entry to " <<  A << " parameter number " <<  I2 <<  " had an illegal value \n";
@@ -1068,7 +1079,7 @@ double dlamch_(const char* CMACH, int len)
 bool lsame_(const char *ca, const char *cb, int ca_len, int cb_len)
 {
     bool ret_val;
-    long inta, intb, zcode;
+    RC_INT inta, intb, zcode;
 
 
     ret_val = *(unsigned char *)ca == *(unsigned char *)cb;
@@ -1120,22 +1131,22 @@ bool lsame_(const char *ca, const char *cb, int ca_len, int cb_len)
 
 
 
-int dlaebz_(long *ijob, long *nitmax, long *n,
-    long *mmax, long *minp, long *nbmin, double *abstol,
+int dlaebz_(RC_INT *ijob, RC_INT *nitmax, RC_INT *n,
+    RC_INT *mmax, RC_INT *minp, RC_INT *nbmin, double *abstol,
     double *reltol, double *pivmin, double *d__, double *
-    e, double *e2, long *nval, double *ab, double *c__,
-    long *mout, long *nab, double *work, long *iwork,
-    long *info)
+    e, double *e2, RC_INT *nval, double *ab, double *c__,
+    RC_INT *mout, RC_INT *nab, double *work, RC_INT *iwork,
+    RC_INT *info)
 {
     /* System generated locals */
-    long nab_dim1, nab_offset, ab_dim1, ab_offset, i__1, i__2, i__3, i__4,
+    RC_INT nab_dim1, nab_offset, ab_dim1, ab_offset, i__1, i__2, i__3, i__4,
         i__5, i__6;
     double d__1, d__2, d__3, d__4;
 
     /* Local variables */
-    long j, kf, ji, kl, jp, jit;
+    RC_INT j, kf, ji, kl, jp, jit;
     double tmp1, tmp2;
-    long itmp1, itmp2, kfnew, klnew;
+    RC_INT itmp1, itmp2, kfnew, klnew;
 
     /* Parameter adjustments */
     nab_dim1 = *mmax;
@@ -1522,12 +1533,12 @@ double dstebz_min(double a, double b)
     if(a < b) return a;
     return b;
 }
-long dstebz_min(long a, long b)
+RC_INT dstebz_min(RC_INT a, RC_INT b)
 {
     if(a < b) return a;
     return b;
 }
-long dstebz_max(long a, long b)
+RC_INT dstebz_max(RC_INT a, RC_INT b)
 {
     if(a > b) return a;
     return b;

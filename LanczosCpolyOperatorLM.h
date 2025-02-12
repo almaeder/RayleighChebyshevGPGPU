@@ -117,7 +117,7 @@ LanczosCpolyOperatorLM()
       Op                  = 0;
 };
 
-LanczosCpolyOperatorLM(long polyDegree, long repetitionFactor,
+LanczosCpolyOperatorLM(RC_INT polyDegree, RC_INT repetitionFactor,
 double  lambdaMax,  double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -137,7 +137,7 @@ void initialize(Otype& Op)
       this->Op = &Op;
 };
 
-void setLanczosCpolyParameters(long polyDegree, long repetitionFactor,
+void setLanczosCpolyParameters(RC_INT polyDegree, RC_INT repetitionFactor,
 double  lambdaMax, double shift)
 {
 	if(this->Op == nullptr)
@@ -150,7 +150,7 @@ double  lambdaMax, double shift)
 	lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
 }
 
-void initialize(long polyDegree, long repetitionFactor, 
+void initialize(RC_INT polyDegree, RC_INT repetitionFactor, 
 double  lambdaMax, double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -166,12 +166,12 @@ void setShift(double shift)
     lanczosCpoly.setShift(shift);
 }
 
-void setPolyDegree(long polyDegree)
+void setPolyDegree(RC_INT polyDegree)
 {
 	lanczosCpoly.setPolyDegree(polyDegree);
 }
 
-void setRepetitionFactor(long repetitionFactor)
+void setRepetitionFactor(RC_INT repetitionFactor)
 {
     lanczosCpoly.setRepetitionFactor(repetitionFactor);
 }
@@ -191,14 +191,14 @@ void setRepetitionFactor(long repetitionFactor)
 #ifndef VBLAS_
 void apply(std::vector<Vtype>& vArray)
 {
-    long repCount;
-    long k;
+    RC_INT repCount;
+    RC_INT k;
 
     double UpperXStar       = lanczosCpoly.UpperXStar;
     double shift            = lanczosCpoly.shift;
     double lambdaMax        = lanczosCpoly.lambdaMax;
-    long   polyDegree       = lanczosCpoly.polyDegree;
-    long   repetitionFactor = lanczosCpoly.repetitionFactor;
+    RC_INT   polyDegree       = lanczosCpoly.polyDegree;
+    RC_INT   repetitionFactor = lanczosCpoly.repetitionFactor;
 
 
     double starFactor = UpperXStar; // 1.0 - XStar;
@@ -206,7 +206,7 @@ void apply(std::vector<Vtype>& vArray)
     double gamma1     = -2.0/(rhoB - 2.0*shift);
     double gamma2     =  2.0 - (4.0*shift)/rhoB;
 
-    long vSize = (long)vArray.size();
+    RC_INT vSize = (RC_INT)vArray.size();
 
     vn.resize(vSize);
     vnm1.resize(vSize);
@@ -215,7 +215,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-	for(long p = 0; p < vSize; p++)
+	for(RC_INT p = 0; p < vSize; p++)
 	{
        vn[p].initialize(vArray[p]);
        vnm1[p].initialize(vArray[p]);
@@ -236,7 +236,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnm2ArrayPtr)[p] = vArray[p];
         (*vnm1ArrayPtr)[p] = vArray[p];
@@ -247,7 +247,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnm1ArrayPtr)[p]  *=  gamma1;
         (*vnm1ArrayPtr)[p]  += (*vnm2ArrayPtr)[p];
@@ -262,7 +262,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnArrayPtr)[p]  =  (*vnm1ArrayPtr)[p];
         }
@@ -272,7 +272,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnArrayPtr)[p]   *=  gamma1;
         (*vnArrayPtr)[p]   += (*vnm1ArrayPtr)[p];
@@ -295,7 +295,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnm1ArrayPtr)[p] *= (1.0/double(polyDegree+1));
         vArray[p]      = (*vnm1ArrayPtr)[p];
@@ -309,14 +309,14 @@ void apply(std::vector<Vtype>& vArray)
 
 void apply(std::vector<Vtype>& vArray)
 {
-    long repCount;
-    long k;
+    RC_INT repCount;
+    RC_INT k;
 
     double UpperXStar       = lanczosCpoly.UpperXStar;
     double shift            = lanczosCpoly.shift;
     double lambdaMax        = lanczosCpoly.lambdaMax;
-    long   polyDegree       = lanczosCpoly.polyDegree;
-    long   repetitionFactor = lanczosCpoly.repetitionFactor;
+    RC_INT   polyDegree       = lanczosCpoly.polyDegree;
+    RC_INT   repetitionFactor = lanczosCpoly.repetitionFactor;
 
 
     double starFactor = UpperXStar; // 1.0 - XStar;
@@ -324,7 +324,7 @@ void apply(std::vector<Vtype>& vArray)
     double gamma1     = -2.0/(rhoB - 2.0*shift);
     double gamma2     =  2.0 - (4.0*shift)/rhoB;
 
-    long vSize = (long)vArray.size();
+    RC_INT vSize = (RC_INT)vArray.size();
 
     vn.resize(vSize);
     vnm1.resize(vSize);
@@ -333,7 +333,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-	for(long p = 0; p < vSize; p++)
+	for(RC_INT p = 0; p < vSize; p++)
 	{
        vn[p].initialize(vArray[p]);
        vnm1[p].initialize(vArray[p]);
@@ -354,7 +354,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnm2ArrayPtr)[p] = vArray[p];
         (*vnm1ArrayPtr)[p] = vArray[p];
@@ -363,7 +363,7 @@ void apply(std::vector<Vtype>& vArray)
         Op->apply(*vnm1ArrayPtr);
 
 
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnm1ArrayPtr)[p].axpby(gamma2,(*vnm2ArrayPtr)[p],gamma1*gamma2);
         }
@@ -377,7 +377,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnArrayPtr)[p] = (*vnm1ArrayPtr)[p];
         }
@@ -387,7 +387,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnArrayPtr)[p].axpby(gamma2,(*vnm1ArrayPtr)[p],gamma1*gamma2);
         (*vnArrayPtr)[p].axpy(-1.0,(*vnm2ArrayPtr)[p]);
@@ -406,7 +406,7 @@ void apply(std::vector<Vtype>& vArray)
 #ifdef _OPENMP
        #pragma omp parallel for
 #endif
-        for(long p = 0; p < vSize; p++)
+        for(RC_INT p = 0; p < vSize; p++)
         {
         (*vnm1ArrayPtr)[p] *= (1.0/double(polyDegree+1));
         vArray[p]      = (*vnm1ArrayPtr)[p];
@@ -417,8 +417,8 @@ void apply(std::vector<Vtype>& vArray)
 
 	LanczosCpoly lanczosCpoly;
 
-     long   polyDegree;
-     long   repetitionFactor;
+     RC_INT   polyDegree;
+     RC_INT   repetitionFactor;
      double lambdaMax;
      double shift;
      double XStar;

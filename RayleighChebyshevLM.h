@@ -52,7 +52,7 @@
    operator *=(double alpha)          (scalar multiplication)
 
    double dot(const Vtype&)           (dot product)
-   long getDimension() const          (returns dimension of the Vtype subspace)
+   RC_INT getDimension() const          (returns dimension of the Vtype subspace)
 
    if VBLAS_ is defined, then the Vtype class must also possess member functions
 
@@ -168,11 +168,11 @@
 #include <algorithm>
 
 #ifndef RC_WITHOUT_LAPACK_
-#include "LapackInterface/SCC_LapackMatrix.h"
-#include "LapackInterface/SCC_LapackMatrixRoutines.h"
+#include "SCC_LapackMatrix.h"
+#include "SCC_LapackMatrixRoutines.h"
 
-#include "LapackInterface/SCC_LapackMatrixCmplx16.h"
-#include "LapackInterface/SCC_LapackMatrixRoutinesCmplx16.h"
+#include "SCC_LapackMatrixCmplx16.h"
+#include "SCC_LapackMatrixRoutinesCmplx16.h"
 #endif
 
 #include "RCarray2d.h"
@@ -343,7 +343,7 @@ class RayleighChebyshevLM
     maxMinTol = val;
     }
     
-    void setMaxInnerLoopCount(long val)
+    void setMaxInnerLoopCount(RC_INT val)
     {maxInnerLoopCount  = val;}
 
     void resetMaxInnerLoopCount()
@@ -386,12 +386,12 @@ class RayleighChebyshevLM
     double getMaxEigValueEst()
     {return maxEigValueEst;}
 
-    void setMinIntervalPolyDegreeMax(long polyDegMax)
+    void setMinIntervalPolyDegreeMax(RC_INT polyDegMax)
     {
     	minIntervalPolyDegreeMax = polyDegMax;
     }
     
-    void setFilterRepetitionCount(long repetitionCount)
+    void setFilterRepetitionCount(RC_INT repetitionCount)
     {
     	filterRepetitionCount = repetitionCount;
     }
@@ -419,12 +419,12 @@ class RayleighChebyshevLM
     hardIntervalStopFlag = false;
     }
 
-    void setMaxSpectralBoundsIter(long iterCount)
+    void setMaxSpectralBoundsIter(RC_INT iterCount)
     {
     	lanczosMaxMinFinder.setIterationMax(iterCount);
     }
 
-    long getSpectralBoundsIterCount()
+    RC_INT getSpectralBoundsIterCount()
     {
     	return lanczosMaxMinFinder.getIterationCount();
     }
@@ -449,7 +449,7 @@ class RayleighChebyshevLM
     	return finalData;
     }
 
-    std::map<std::string,long> getCountData() const
+    std::map<std::string,RC_INT> getCountData() const
     {
     	return countData;
     }
@@ -478,7 +478,7 @@ class RayleighChebyshevLM
     void computeVtVeigensystem(RCarray2d<double>& VtAV, std::vector<double>& VtAVeigValue,
     RCarray2d<double>& VtAVeigVector)
     {
-    	long rowSize = VtAV.getRowSize();
+    	RC_INT rowSize = VtAV.getRowSize();
 
     	if(useJacobiFlag)
     	{
@@ -492,7 +492,7 @@ class RayleighChebyshevLM
     	/////////////////////////////////////////////////////////////////////////////
     	//     Calculation using LAPACK
     	////////////////////////////////////////////////////////////////////////////
-    	long colSize = VtAV.getColSize();
+    	RC_INT colSize = VtAV.getColSize();
 
     	SCC::LapackMatrix VtAVmatrix;
     	SCC::LapackMatrix VtAVeigVectorMatrix;
@@ -500,9 +500,9 @@ class RayleighChebyshevLM
     	VtAVmatrix.initialize(rowSize, colSize);
     	VtAVeigVectorMatrix.initialize(rowSize,colSize);
 
-    	for(long i = 0; i < rowSize; i++)
+    	for(RC_INT i = 0; i < rowSize; i++)
     	{
-    	for(long j = 0; j < colSize; j++)
+    	for(RC_INT j = 0; j < colSize; j++)
     	{
     	VtAVmatrix(i,j) = VtAV(i,j);
     	VtAVeigVectorMatrix(i,j) = VtAVeigVector(i,j);
@@ -510,9 +510,9 @@ class RayleighChebyshevLM
 
         dsyev.computeEigensystem(VtAVmatrix, VtAVeigValue, VtAVeigVectorMatrix);
 
-        for(long i = 0; i < rowSize; i++)
+        for(RC_INT i = 0; i < rowSize; i++)
     	{
-    	for(long j = 0; j < colSize; j++)
+    	for(RC_INT j = 0; j < colSize; j++)
     	{
     	VtAVeigVectorMatrix(i,j) = VtAVeigVector(i,j) = VtAVeigVectorMatrix(i,j);
     	}}
@@ -535,8 +535,8 @@ class RayleighChebyshevLM
     	throw std::runtime_error(errMsg);
         #else
 
-    	long rowSize = VtAV.getRowSize();
-    	long colSize = VtAV.getColSize();
+    	RC_INT rowSize = VtAV.getRowSize();
+    	RC_INT colSize = VtAV.getColSize();
 
     	/////////////////////////////////////////////////////////////////////////////
     	//     Calculation using LAPACK
@@ -545,9 +545,9 @@ class RayleighChebyshevLM
     	SCC::LapackMatrixCmplx16  VtAVmatrix(rowSize,colSize);
     	SCC::LapackMatrixCmplx16  VtAVeigVectorMatrix(rowSize,colSize);
 
-    	for(long i = 0; i < rowSize; i++)
+    	for(RC_INT i = 0; i < rowSize; i++)
     	{
-    	for(long j = 0; j < colSize; j++)
+    	for(RC_INT j = 0; j < colSize; j++)
     	{
     	VtAVmatrix(i,j) = VtAV(i,j);
     	VtAVeigVectorMatrix(i,j) = VtAVeigVector(i,j);
@@ -555,9 +555,9 @@ class RayleighChebyshevLM
 
     	zhpevx.createEigensystem(VtAVmatrix, VtAVeigValue,VtAVeigVectorMatrix);
 
-    	for(long i = 0; i < rowSize; i++)
+    	for(RC_INT i = 0; i < rowSize; i++)
     	{
-    	for(long j = 0; j < colSize; j++)
+    	for(RC_INT j = 0; j < colSize; j++)
     	{
     	VtAVeigVectorMatrix(i,j) = VtAVeigVector(i,j) = VtAVeigVectorMatrix(i,j);
     	}}
@@ -690,13 +690,13 @@ class RayleighChebyshevLM
     // maxEigValueBound > maxEigValue
     // minEigValueEst   > minEigValue
     //
-    long getMinEigenSystem(long eigCount, double minEigValueEst, double maxEigValueBound,
-    double subspaceTol, long subspaceIncrementSize, long bufferSize, 
+    RC_INT getMinEigenSystem(RC_INT eigCount, double minEigValueEst, double maxEigValueBound,
+    double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, 
     Vtype& vStart, Otype& oP, VRandomizeOpType& randOp, std::vector<double>& eigValues,
     std::vector < Vtype > & eigVectors)
     {
 
-    long maxEigensystemDim = eigCount;
+    RC_INT maxEigensystemDim = eigCount;
     double lambdaMax       = maxEigValueBound;
 
     this->clearIntervalStopCondition();
@@ -709,8 +709,8 @@ class RayleighChebyshevLM
 //
 //  Computes the lowest eigCount eigenvalues and eigenvectors
 //
-    long getMinEigenSystem(long eigCount, double subspaceTol, long subspaceIncrementSize, 
-    long bufferSize, Vtype& vStart, Otype& oP, VRandomizeOpType& randOp, 
+    RC_INT getMinEigenSystem(RC_INT eigCount, double subspaceTol, RC_INT subspaceIncrementSize, 
+    RC_INT bufferSize, Vtype& vStart, Otype& oP, VRandomizeOpType& randOp, 
     std::vector<double>&  eigValues, std::vector < Vtype > & eigVectors)
     {
 
@@ -742,8 +742,8 @@ class RayleighChebyshevLM
     // return value <  0 returns error code
     // 
 
-    long getMinIntervalEigenSystem(double lambdaMax, double subspaceTol, 
-    long subspaceIncrementSize, long bufferSize, long maxEigensystemDim, 
+    RC_INT getMinIntervalEigenSystem(double lambdaMax, double subspaceTol, 
+    RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim, 
     Vtype& vStart,Otype& oP, VRandomizeOpType& randOp, std::vector<double>&  eigValues,
     std::vector < Vtype > & eigVectors)
     {
@@ -793,8 +793,8 @@ class RayleighChebyshevLM
     // the minimal eigenvalue for you. 
     // 
 
-    long getMinIntervalEigenSystem(double minEigValueEst, double lambdaMax, double maxEigValueBound,
-    double subspaceTol, long subspaceIncrementSize, long bufferSize, long maxEigensystemDim,
+    RC_INT getMinIntervalEigenSystem(double minEigValueEst, double lambdaMax, double maxEigValueBound,
+    double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim,
     Vtype& vStart, Otype& oP, VRandomizeOpType& randOp, std::vector<double>&  eigValues,
     std::vector < Vtype > & eigVectors)
     {
@@ -814,8 +814,8 @@ class RayleighChebyshevLM
 //
 protected:
 
-    long getMinIntervalEigenSystem_Base(double minEigValue, double lambdaMax, double maxEigValue,
-    double subspaceTol, long subspaceIncrementSize, long bufferSize, long maxEigensystemDim, 
+    RC_INT getMinIntervalEigenSystem_Base(double minEigValue, double lambdaMax, double maxEigValue,
+    double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim, 
     Vtype& vStart, Otype& oP, VRandomizeOpType& randOp, std::vector<double>&  eigValues,
     std::vector < Vtype > & eigVectors)
     {
@@ -856,12 +856,12 @@ protected:
     eigVectors.clear();
     }
 
-    long returnFlag = 0;
+    RC_INT returnFlag = 0;
 
     double   lambdaStar;
-    long   subspaceSize;   
-    long      foundSize;
-    long     foundCount;
+    RC_INT   subspaceSize;   
+    RC_INT      foundSize;
+    RC_INT     foundCount;
 
     bool  completedBasisFlag = false;
 
@@ -880,7 +880,7 @@ protected:
     // Reset sizes if subspaceSize is larger
     // than dimension of system
 
-    long vectorDimension = vStart.getDimension();
+    RC_INT vectorDimension = vStart.getDimension();
 
     if(subspaceSize > vectorDimension)
     {
@@ -920,8 +920,8 @@ protected:
     VtAV.initialize(subspaceSize,subspaceSize);
     VtAVeigVector.initialize(subspaceSize,subspaceSize);
 
-    long   starDegree     = 0;
-    long   starDegreeSave = 0;
+    RC_INT   starDegree     = 0;
+    RC_INT   starDegreeSave = 0;
     double starBoundSave  = 0.0;
     double shift          = 0.0;
     double starBound      = 0.0;
@@ -931,14 +931,14 @@ protected:
     double stopCheckValue = 0.0;
     double eigDiffRatio   = 0.0;
 
-    long residualCheckCount = 0;
-    long   innerLoopCount   = 0;
+    RC_INT residualCheckCount = 0;
+    RC_INT   innerLoopCount   = 0;
 
     double vtvEig;
     double vtvEigCheck;
 
-    long indexA_start; long indexA_end;
-    long indexB_start; long indexB_end;
+    RC_INT indexA_start; RC_INT indexA_end;
+    RC_INT indexB_start; RC_INT indexB_end;
 
     //
     // Initialize subspace vectors using random vectors, or input
@@ -947,7 +947,7 @@ protected:
 
     if(not nonRandomStartFlag)
     {
-    	for(long k = 0; k < subspaceSize; k++)
+    	for(RC_INT k = 0; k < subspaceSize; k++)
     	{
     		vArray[k].initialize(vStart);
     		randOp.randomize(vArray[k]);
@@ -956,14 +956,14 @@ protected:
     }
     else
     {
-    	if(subspaceSize > (long)eigVectors.size())
+    	if(subspaceSize > (RC_INT)eigVectors.size())
     	{
-    		for(long k = 0; k < (long)eigVectors.size(); k++)
+    		for(RC_INT k = 0; k < (RC_INT)eigVectors.size(); k++)
     		{
     			vArray[k].initialize(eigVectors[k]);
     			vArrayTmp[k].initialize(vStart);
     		}
-    		for(long k = (long)eigVectors.size(); k < subspaceSize; k++)
+    		for(RC_INT k = (RC_INT)eigVectors.size(); k < subspaceSize; k++)
     		{
     		vArray[k].initialize(vStart);
     		randOp.randomize(vArray[k]);
@@ -972,7 +972,7 @@ protected:
     	}
     	else
     	{
-    		for(long k = 0; k <  subspaceSize; k++)
+    		for(RC_INT k = 0; k <  subspaceSize; k++)
     		{
     			vArray[k].initialize(eigVectors[k]);
     			vArrayTmp[k].initialize(vStart);
@@ -993,7 +993,7 @@ protected:
     MtVarray.clear();
     MtVarray.resize(threadCount);
 
-    for(long k = 0; k < threadCount; k++)
+    for(RC_INT k = 0; k < threadCount; k++)
     {
     	MtVarray[k].initialize(vStart);
     }
@@ -1004,8 +1004,8 @@ protected:
 
     if(vectorDimension == subspaceSize)
     {
-    long maxOrthoCheck   = 10;
-    long orthoCheckCount = 1;
+    RC_INT maxOrthoCheck   = 10;
+    RC_INT orthoCheckCount = 1;
     orthogonalize(vArray);
 
     // Due to instability of modified Gram-Schmidt for creating an
@@ -1051,8 +1051,8 @@ protected:
 
     int  exitFlag = 0;
 
-    long   applyCount            = 0;
-    long   applyCountCumulative  = 0;
+    RC_INT   applyCount            = 0;
+    RC_INT   applyCountCumulative  = 0;
 
     char charBuf[256];    // To enable use of C-style formatted output
     std::string oString;  // To enable use of C-style formatted output
@@ -1076,7 +1076,7 @@ protected:
 //  This step is done for cases when the routine
 //  is called to continue an existing computation.
 //
-    for(long k = bufferSize; k < subspaceSize; k++)
+    for(RC_INT k = bufferSize; k < subspaceSize; k++)
     {
          oldEigs[k] = oldEigs[bufferSize];
     }
@@ -1085,7 +1085,7 @@ protected:
 //
     if(applyCountCumulative > 0)
     {
-    for(long k = bufferSize; k < subspaceSize; k++)
+    for(RC_INT k = bufferSize; k < subspaceSize; k++)
     {
         randOp.randomize(vArray[k]);
     }
@@ -1125,7 +1125,7 @@ protected:
     maxResidual = 0.0;
     maxEigDiff  = 0.0;
 
-    long oscillationCount = 0;
+    RC_INT oscillationCount = 0;
 
     while((stopCheckValue  > subspaceTol)&&(innerLoopCount < maxInnerLoopCount))
     {
@@ -1301,7 +1301,7 @@ protected:
     {
     oString.clear();
     snprintf(charBuf,256,"XXXX Subspace Eigs XXXX \n"); oString = charBuf;
-    for(long i = 0; i < subspaceSize; i++)
+    for(RC_INT i = 0; i < subspaceSize; i++)
     {
     snprintf(charBuf,256,"%3ld : %+10.5e \n",i,VtAVeigValue[i]); oString += charBuf;
     }
@@ -1320,19 +1320,19 @@ protected:
 //  over an interval.
 //
 
-    long eigSubspaceCheckSize;
+    RC_INT eigSubspaceCheckSize;
 
     if(intervalStopConditionFlag) {eigSubspaceCheckSize  = subspaceIncrementSize + 1;}
     else                          {eigSubspaceCheckSize  = subspaceIncrementSize;}
 
-    for(long i = 0; i < eigSubspaceCheckSize; i++)
+    for(RC_INT i = 0; i < eigSubspaceCheckSize; i++)
     {
     	oldEigDiffs[i] = eigDiffs[i];
     }
 
     maxEigDiff  = 0.0;
 
-    for(long i = 0; i < eigSubspaceCheckSize; i++)
+    for(RC_INT i = 0; i < eigSubspaceCheckSize; i++)
     {
     eigDiff = std::abs(VtAVeigValue[i] - oldEigs[i]);
     relErrFactor = getRelErrorFactor(oldEigs[i],subspaceTol);
@@ -1341,7 +1341,7 @@ protected:
     maxEigDiff = (eigDiff > maxEigDiff)? eigDiff : maxEigDiff;
     }
 
-    for(long i = 0; i < subspaceSize; i++)
+    for(RC_INT i = 0; i < subspaceSize; i++)
     {
     oldEigs[i] = VtAVeigValue[i];
     }
@@ -1351,11 +1351,11 @@ protected:
     // for which the convergence tolerance has not been achieved. 
     //
 
-    long diffCount = 0;
+    RC_INT diffCount = 0;
     eigDiffRatio  = 0.0;
     if(maxEigDiff > subspaceTol)
     {
-        for(long i = 0; i < eigSubspaceCheckSize; i++)
+        for(RC_INT i = 0; i < eigSubspaceCheckSize; i++)
     	{
           if(std::abs(oldEigDiffs[i]) > subspaceTol/10.0)
           {
@@ -1370,7 +1370,7 @@ protected:
     double spectralRange = std::abs((lambdaMax-minEigValue));
 
     maxGap = 0.0;
-    for(long i = 1; i < eigSubspaceCheckSize; i++)
+    for(RC_INT i = 1; i < eigSubspaceCheckSize; i++)
     {
     maxGap = std::max(maxGap,std::abs(VtAVeigValue[i]-VtAVeigValue[i-1])/spectralRange);
     }
@@ -1413,7 +1413,7 @@ protected:
     // When using residual stop tolearnce force termination
     // if residual is oscillating and has value < sqrt(subspaceTol)
     //
-    long   rIndex; double residual2ndDiffA; double residual2ndDiffB;
+    RC_INT   rIndex; double residual2ndDiffA; double residual2ndDiffB;
 
     if((stopCondition == RC_Types::StopCondition::RESIDUAL_ONLY)&&(maxResidual < std::sqrt(subspaceTol)))
     {
@@ -1487,7 +1487,7 @@ protected:
 //
 //  Capture the found eigenpairs
 //
-    long checkIndexCount;
+    RC_INT checkIndexCount;
 
     if(foundSize + subspaceSize < vectorDimension)
     {checkIndexCount = subspaceIncrementSize;}
@@ -1496,7 +1496,7 @@ protected:
 
     // Check for eigenvalues less than maximal eigenvalue
 
-    for(long i = 0; i < checkIndexCount; i++)
+    for(RC_INT i = 0; i < checkIndexCount; i++)
     {
     vtvEig  = VtAVeigValue[i];
     relErrFactor = getRelErrorFactor(lambdaMax,subspaceTol);
@@ -1526,7 +1526,7 @@ protected:
     	eigVectors.resize(foundSize+foundCount,vStart);
     	eigValues.resize(foundSize+foundCount,0.0);
 
-        for(long i = 0; i < foundCount; i++)
+        for(RC_INT i = 0; i < foundCount; i++)
         {
         eigVectors[foundSize + i] =      vArray[i];
         eigValues[foundSize + i]  = VtAVeigValue[i];
@@ -1548,7 +1548,7 @@ protected:
     //
     if(not exitFlag)
     {
-    	for(long k = 0; k+foundCount < subspaceSize; k++)
+    	for(RC_INT k = 0; k+foundCount < subspaceSize; k++)
     	{
     	vArray[k] = vArray[k+foundCount];
     	}
@@ -1618,7 +1618,7 @@ protected:
     		subspaceSize          = subspaceIncrementSize;
     		completedBasisFlag    = true;
     		vArray.resize(subspaceSize);
-    		for(long k = 0; k < subspaceSize; k++)
+    		for(RC_INT k = 0; k < subspaceSize; k++)
     		{
     		randOp.randomize(vArray[k]);
     		}
@@ -1663,7 +1663,7 @@ protected:
 //
     bool nonMonotoneFlag = false;
 
-    for(long i = 0; i < foundSize-1; i++)
+    for(RC_INT i = 0; i < foundSize-1; i++)
     {
     if(eigValues[i] > eigValues[i+1]) {nonMonotoneFlag = true;}
     }
@@ -1712,17 +1712,17 @@ protected:
 //   being less than lambdaMax
 //   
 //
-	long finalFoundCount = 0;
+	RC_INT finalFoundCount = 0;
   
     if(intervalStopConditionFlag)
     {
     relErrFactor = getRelErrorFactor(lambdaMax,subspaceTol);
-    for(long i = 0; i < (long)eigValues.size(); i++)
+    for(RC_INT i = 0; i < (RC_INT)eigValues.size(); i++)
     {
     if((eigValues[i] - lambdaMax)/relErrFactor < subspaceTol) {finalFoundCount++;}
     }
 
-    if(finalFoundCount < (long)eigValues.size())
+    if(finalFoundCount < (RC_INT)eigValues.size())
     {
     eigValues.resize(finalFoundCount);
     eigVectors.resize(finalFoundCount);
@@ -1781,11 +1781,11 @@ protected:
 
 void orthogonalize(std::vector< Vtype >& V)
 {
-	long subspaceSize = (long)V.size();
+	RC_INT subspaceSize = (RC_INT)V.size();
 #ifndef VBLAS_
 #ifdef _OPENMP
 	int threadNum;
-	for(long k = 1; k <= subspaceSize; k++)
+	for(RC_INT k = 1; k <= subspaceSize; k++)
     {
         auto rkk          = std::sqrt(std::abs(V[k-1].dot(V[k-1])));
         V[k-1] *= 1.0/rkk;
@@ -1793,7 +1793,7 @@ void orthogonalize(std::vector< Vtype >& V)
 		#pragma omp parallel for \
 		private(threadNum) \
 		schedule(static,1)
-        for(long j = k+1; j <= subspaceSize; j++)
+        for(RC_INT j = k+1; j <= subspaceSize; j++)
         {
         	threadNum = omp_get_thread_num();
             auto rkj              =   V[j-1].dot(V[k-1]);
@@ -1803,11 +1803,11 @@ void orthogonalize(std::vector< Vtype >& V)
         }
     }
 #else
-    for(long k = 1; k <= subspaceSize; k++)
+    for(RC_INT k = 1; k <= subspaceSize; k++)
     {
         auto rkk          = std::sqrt(std::abs(V[k-1].dot(V[k-1])));
         V[k-1] *= 1.0/rkk;
-        for(long j = k+1; j <= subspaceSize; j++)
+        for(RC_INT j = k+1; j <= subspaceSize; j++)
         {
             auto rkj      =   V[j-1].dot(V[k-1]);
             vTemp         =   V[k-1];
@@ -1819,7 +1819,7 @@ void orthogonalize(std::vector< Vtype >& V)
 #endif
 
 #ifdef VBLAS_
-    for(long k = 1; k <= subspaceSize; k++)
+    for(RC_INT k = 1; k <= subspaceSize; k++)
     {
         auto rkk  = V[k-1].nrm2();
         V[k-1].scal(1.0/rkk);
@@ -1827,7 +1827,7 @@ void orthogonalize(std::vector< Vtype >& V)
 		#pragma omp parallel for \
 		schedule(static,1)
 #endif
-        for(long j = k+1; j <= subspaceSize; j++)
+        for(RC_INT j = k+1; j <= subspaceSize; j++)
         {
             auto rkj  =   V[j-1].dot(V[k-1]);
             V[j-1].axpy(-rkj,V[k-1]);
@@ -1841,19 +1841,19 @@ void orthogonalize(std::vector< Vtype >& V)
 //  specified Bvectors. After orthogonalization, the Avectors are normalized
 //  to unit length.
 //
-void OrthogonalizeAtoB(std::vector< Vtype >& Avectors, long indexA_start, long indexA_end,
-std::vector< Vtype >&  Bvectors, long indexB_start, long indexB_end)
+void OrthogonalizeAtoB(std::vector< Vtype >& Avectors, RC_INT indexA_start, RC_INT indexA_end,
+std::vector< Vtype >&  Bvectors, RC_INT indexB_start, RC_INT indexB_end)
 {
 #ifndef VBLAS_
 
 #ifdef _OPENMP
     int threadNum;
-    for(long j = indexB_start; j <= indexB_end ; j++)
+    for(RC_INT j = indexB_start; j <= indexB_end ; j++)
     {
  	#pragma omp parallel for \
  	private(threadNum) \
 	schedule(static,1)
-    for(long k = indexA_start; k <= indexA_end; k++)
+    for(RC_INT k = indexA_start; k <= indexA_end; k++)
     {
     	threadNum = omp_get_thread_num();
         MtVarray[threadNum]  =   Bvectors[j];
@@ -1865,16 +1865,16 @@ std::vector< Vtype >&  Bvectors, long indexB_start, long indexB_end)
 
 	#pragma omp parallel for \
 	schedule(static,1)
-    for(long k = indexA_start; k <= indexA_end; k++)
+    for(RC_INT k = indexA_start; k <= indexA_end; k++)
     {
     auto rkk      = std::sqrt(std::abs(Avectors[k].dot(Avectors[k])));
     Avectors[k]  *= 1.0/rkk;
     }
 #else
 
-    for(long j = indexB_start; j <= indexB_end ; j++)
+    for(RC_INT j = indexB_start; j <= indexB_end ; j++)
     {
-    for(long k = indexA_start; k <= indexA_end; k++)
+    for(RC_INT k = indexA_start; k <= indexA_end; k++)
     {
         vTemp           =   Bvectors[j];
         auto rkj        =   Avectors[k].dot(Bvectors[j]);
@@ -1882,7 +1882,7 @@ std::vector< Vtype >&  Bvectors, long indexB_start, long indexB_end)
         Avectors[k]    +=   vTemp;
     }
     }
-    for(long k = indexA_start; k <= indexA_end; k++)
+    for(RC_INT k = indexA_start; k <= indexA_end; k++)
     {
     auto rkk      = std::sqrt(std::abs(Avectors[k].dot(Avectors[k])));
     Avectors[k]  *= 1.0/rkk;
@@ -1892,13 +1892,13 @@ std::vector< Vtype >&  Bvectors, long indexB_start, long indexB_end)
 
 
 #ifdef VBLAS_
-for(long j = indexB_start; j <= indexB_end; j++)
+for(RC_INT j = indexB_start; j <= indexB_end; j++)
 {
 #ifdef _OPENMP
  	   #pragma omp parallel for \
 	   schedule(static,1)
 #endif
-       for(long k = indexA_start; k <= indexA_end; k++)
+       for(RC_INT k = indexA_start; k <= indexA_end; k++)
        {
         auto rkj  =   Avectors[k].dot(Bvectors[j]);
         Avectors[k].axpy(-rkj,Bvectors[j]);
@@ -1908,7 +1908,7 @@ for(long j = indexB_start; j <= indexB_end; j++)
 #pragma omp parallel for \
 schedule(static,1)
 #endif
-for(long k = indexA_start; k <= indexA_end; k++)
+for(RC_INT k = indexA_start; k <= indexA_end; k++)
 {
     auto rkk  =   Avectors[k].nrm2();
     Avectors[k].scal(1.0/rkk);
@@ -1927,7 +1927,7 @@ for(long k = indexA_start; k <= indexA_end; k++)
 
 void formVtAV(std::vector< Vtype >& V, RCarray2d<Dtype>& H)
 {
-	long subspaceSize = (long)V.size();
+	RC_INT subspaceSize = (RC_INT)V.size();
 
 	for(size_t p = 0; p < vArray.size(); p++)
 	{
@@ -1939,27 +1939,27 @@ void formVtAV(std::vector< Vtype >& V, RCarray2d<Dtype>& H)
 #ifdef _OPENMP
 #pragma omp parallel for \
 schedule(static,1)
-    for(long i = 0; i < subspaceSize; i++)
+    for(RC_INT i = 0; i < subspaceSize; i++)
     {
-        for(long j = i; j < subspaceSize; j++)
+        for(RC_INT j = i; j < subspaceSize; j++)
         {
         H(j,i) = V[j].dot(vArrayTmp[i]);
         }
     }
-    for(long i = 0; i < subspaceSize; i++)
+    for(RC_INT i = 0; i < subspaceSize; i++)
     {
-    	for(long j = i+1; j < subspaceSize; j++)
+    	for(RC_INT j = i+1; j < subspaceSize; j++)
     	{
     	     H(i,j) = H(j,i);
     	}
     }
 
 #else
-    for(long i = 0; i < subspaceSize; i++)
+    for(RC_INT i = 0; i < subspaceSize; i++)
     {
         vTemp     = V[i];
         OpPtr->apply(vTemp);
-        for(long j = i; j < subspaceSize; j++)
+        for(RC_INT j = i; j < subspaceSize; j++)
         {
         VtAV(j,i) = V[j].dot(vTemp);
         VtAV(i,j) = VtAV(j,i);
@@ -1982,9 +1982,9 @@ schedule(static,1)
 //                  ordered by eigenvalues, algebraically smallest to largest.
 //
 void createEigenVectorsAndResiduals(RCarray2d<Dtype>& VtAVeigVector, std::vector< Vtype >& V,
-long residualCheckCount, std::vector<double>& eigVresiduals)
+RC_INT residualCheckCount, std::vector<double>& eigVresiduals)
 {
-	long subspaceSize = (long) V.size();
+	RC_INT subspaceSize = (RC_INT) V.size();
 
 #ifdef _OPENMP
 	int threadNum;
@@ -1995,12 +1995,12 @@ long residualCheckCount, std::vector<double>& eigVresiduals)
     #pragma omp parallel for \
 	private(threadNum) \
 	schedule(static,1)
-    for(long k = 0; k < subspaceSize; k++)
+    for(RC_INT k = 0; k < subspaceSize; k++)
     {
     	threadNum = omp_get_thread_num();
         vArrayTmp[k]  = V[0];
         vArrayTmp[k] *= VtAVeigVector(0,k);
-        for(long i = 1; i < subspaceSize; i++)
+        for(RC_INT i = 1; i < subspaceSize; i++)
         {
         MtVarray[threadNum]  = V[i];
         MtVarray[threadNum] *= VtAVeigVector(i,k);
@@ -2011,11 +2011,11 @@ long residualCheckCount, std::vector<double>& eigVresiduals)
         vArrayTmp[k] *= 1.0/rkk;
     }
 #else
-    for(long k = 0; k < subspaceSize; k++)
+    for(RC_INT k = 0; k < subspaceSize; k++)
     {
         vArrayTmp[k]  = V[0];
         vArrayTmp[k] *= VtAVeigVector(0,k);
-        for(long i = 1; i < subspaceSize; i++)
+        for(RC_INT i = 1; i < subspaceSize; i++)
         {
         vTemp =  V[i];
         vTemp *= VtAVeigVector(i,k);
@@ -2034,12 +2034,12 @@ long residualCheckCount, std::vector<double>& eigVresiduals)
 	#pragma omp parallel for \
 	schedule(static,1)
     #endif
-    for(long k = 0; k < subspaceSize; k++)
+    for(RC_INT k = 0; k < subspaceSize; k++)
     {
         vArrayTmp[k] = V[0];
         vArrayTmp[k].scal(VtAVeigVector(0,k));
 
-        for(long i = 1; i < subspaceSize; i++)
+        for(RC_INT i = 1; i < subspaceSize; i++)
         {
         vArrayTmp[k].axpy(VtAVeigVector(i,k),V[i]);
         }
@@ -2049,7 +2049,7 @@ long residualCheckCount, std::vector<double>& eigVresiduals)
     }
 #endif
 
-    for(long k = 0; k < subspaceSize; k++)
+    for(RC_INT k = 0; k < subspaceSize; k++)
     {
         V[k]  = vArrayTmp[k];
     }
@@ -2064,7 +2064,7 @@ long residualCheckCount, std::vector<double>& eigVresiduals)
     #pragma omp parallel for \
 	private(threadNum) \
 	schedule(static,1)
-    for(long k = 0; k < residualCheckCount; k++)
+    for(RC_INT k = 0; k < residualCheckCount; k++)
     {
     	threadNum = omp_get_thread_num();
         MtVarray[threadNum]   = V[k];
@@ -2073,7 +2073,7 @@ long residualCheckCount, std::vector<double>& eigVresiduals)
         eigVresiduals[k]      = MtVarray[threadNum].norm2();
     }
 #else
-    for(long k = 0; k < residualCheckCount; k++)
+    for(RC_INT k = 0; k < residualCheckCount; k++)
     {
         // Compute residuals
 
@@ -2129,7 +2129,7 @@ void setupCountData()
     countData["eigenvalue"]  = 0;
 }
 
-void incrementCount(const std::string& countValue,long increment = 1)
+void incrementCount(const std::string& countValue,RC_INT increment = 1)
 {
 	 countData[countValue] += increment;
 }
@@ -2216,15 +2216,15 @@ void incrementTotalTime()
     double    maxEigValueEst;
     double    maxMinTol;
 
-    long     minIntervalPolyDegreeMax;
-    long            maxInnerLoopCount;
+    RC_INT     minIntervalPolyDegreeMax;
+    RC_INT            maxInnerLoopCount;
     bool           nonRandomStartFlag;
     bool         fixedIterationCount;
-    long        filterRepetitionCount;
+    RC_INT        filterRepetitionCount;
 
     RC_Types::StopCondition stopCondition;
 
-    std::map<std::string,long>   countData;
+    std::map<std::string,RC_INT>   countData;
 
     std::map<std::string,double> finalData;
 
@@ -2235,7 +2235,7 @@ void incrementTotalTime()
     ClockIt        timer;
     ClockIt  globalTimer;
     std::map<std::string,double> timeValue;
-    std::map<std::string,long>   timeCount;
+    std::map<std::string,RC_INT>   timeCount;
 	#endif
 
     // Temporaries for multi-threading

@@ -111,9 +111,9 @@ void clearIOdataRowStorage()
 	IOdataRowStorage = false;
 }
 
-void applyJacobiTransformation(long i, long j,double c, double s, double t)
+void applyJacobiTransformation(RC_INT i, RC_INT j,double c, double s, double t)
 {
-    long k;
+    RC_INT k;
 
     double tau = s/(1.0 + c);
     double t1; 
@@ -153,9 +153,9 @@ void applyJacobiTransformation(long i, long j,double c, double s, double t)
     M(i,j)  = 0.0;
 }
 
-void updateEigenvectors(long i, long j, double c, double s)
+void updateEigenvectors(RC_INT i, RC_INT j, double c, double s)
 {
-   long k;
+   RC_INT k;
 
     double tau = s/(1.0 + c);
     double t1; 
@@ -196,14 +196,14 @@ void updateEigenvectors(long i, long j, double c, double s)
 // a class instance is declared but before any computation
 // is performed.
 //
-void getEigenvalues(double* mData, long n, double* eigVal)
+void getEigenvalues(double* mData, RC_INT n, double* eigVal)
 {
 	eigVecFlag = 0;
     initialize(mData,n);
 
     computeEigenDecomposition();
 
-    long k;
+    RC_INT k;
 //
 //  Capture the eignevalues
 //
@@ -248,13 +248,13 @@ void getEigenvalues(double* mData, long n, double* eigVal)
 // a class instance is declared but before any computation
 // is performed.
 //              
-void getEigenSystem(double* mData, long n, double* eigVal, double* eigVec)
+void getEigenSystem(double* mData, RC_INT n, double* eigVal, double* eigVec)
 {
 	eigVecFlag = 1;
     initialize(mData,n);
     computeEigenDecomposition();
 
-    long k;
+    RC_INT k;
 //
 //  Capture the eignevalues
 //
@@ -267,7 +267,7 @@ void getEigenSystem(double* mData, long n, double* eigVal, double* eigVec)
 //
 //  Capture the eigenvectors (sorted)
 //
-    long i; long j;
+    RC_INT i; RC_INT j;
 
     if(IOdataRowStorage)
     {
@@ -300,14 +300,14 @@ void computeEigenDecomposition()
 
     // cout << "Initial Threshold : " << tauThreshold << endl;
 
-    long i; long j; long k;
+    RC_INT i; RC_INT j; RC_INT k;
 
     double tau; double t; 
     double c;   double s;
     double M1; double M2;
 
     double signTau = 1.0;
-    long sweepCount = 0;
+    RC_INT sweepCount = 0;
 
     while(tauThreshold > JACOBI_DIAGONALIZER_TOL)
     {
@@ -377,12 +377,12 @@ void computeEigenDecomposition()
     //cout << "Number of Sweeps " << sweepCount << endl;
 }
 
-inline double& M(long i, long j)
+inline double& M(RC_INT i, RC_INT j)
 {
         return *(matrixData + i + j*matrixDimension);
 }
 
-inline double& eVector(long i, long j)
+inline double& eVector(RC_INT i, RC_INT j)
 {
         return *(eVecData  + i  + j*matrixDimension);
 }
@@ -390,7 +390,7 @@ inline double& eVector(long i, long j)
 // Initializes the internal data arrays and copies
 // over the data.
 //
-void initialize(double* mData, long n)
+void initialize(double* mData, RC_INT n)
 {
     if(matrixData != 0)
     {
@@ -408,7 +408,7 @@ void initialize(double* mData, long n)
 
     if(matrixData  == 0) matrixData  = new double[matrixDataSize];
     if(diagData    == 0) diagData    = new double[matrixDimension];
-    if(sortIndex   == 0) sortIndex   = new long[matrixDimension];
+    if(sortIndex   == 0) sortIndex   = new RC_INT[matrixDimension];
 
     if(eigVecFlag   == 1)
     {
@@ -418,7 +418,7 @@ void initialize(double* mData, long n)
 //
 //  Store input matrix in matrixData
 //
-    long i; long j; long k;
+    RC_INT i; RC_INT j; RC_INT k;
 
     if(IOdataRowStorage)
     {
@@ -457,7 +457,7 @@ void initialize(double* mData, long n)
 //
 void getCurrentMatrix(double* mData)
 {
-	long i; long j; 
+	RC_INT i; RC_INT j; 
 
 	for(i = 0; i < matrixDimension; i++)
     {
@@ -471,8 +471,8 @@ void getCurrentMatrix(double* mData)
 
 double OffFrobeniusNorm2()
 {
-    long i; 
-    long j;
+    RC_INT i; 
+    RC_INT j;
     double fNorm2 = 0.0;
 	for(i = 0; i < matrixDimension; i++)
     {
@@ -483,9 +483,9 @@ double OffFrobeniusNorm2()
     return fNorm2;
 }
 
-void sortWithIndex(double* vals, long* index, long n)
+void sortWithIndex(double* vals, RC_INT* index, RC_INT n)
 {
-	long i,j,inc;
+	RC_INT i,j,inc;
 
     for(i = 0; i < n; i++) // set up index array 
     {index[i] = i;}
@@ -494,7 +494,7 @@ void sortWithIndex(double* vals, long* index, long n)
 //  Do a shell sort
 //
 	double valTmp;
-    long   indTmp;
+    RC_INT   indTmp;
 	inc=1;
 	do 
     {
@@ -535,12 +535,12 @@ void sortWithIndex(double* vals, long* index, long n)
 double* matrixData;
 double* eVecData;
 double* diagData;
-long  * sortIndex;
+RC_INT  * sortIndex;
 
 double                  tol;
 int              eigVecFlag;
-long        matrixDimension;
-long         matrixDataSize;
+RC_INT        matrixDimension;
+RC_INT         matrixDataSize;
 
 bool         sortIncreasing;
 bool       IOdataRowStorage;

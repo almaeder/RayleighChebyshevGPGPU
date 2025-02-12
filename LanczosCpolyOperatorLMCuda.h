@@ -106,6 +106,8 @@
 #include "cuda_kernels.h"
 #include "cudaErrchk.h"
 
+#define RC_INT int
+
 #ifndef LANCZOS_C_POLY_OPERATOR_LM_
 #define LANCZOS_C_POLY_OPERATOR_LM_
 
@@ -120,7 +122,7 @@ LanczosCpolyOperatorLMCuda()
       Op                  = 0;
 };
 
-LanczosCpolyOperatorLMCuda(long polyDegree, long repetitionFactor,
+LanczosCpolyOperatorLMCuda(RC_INT polyDegree, RC_INT repetitionFactor,
 double  lambdaMax,  double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -140,7 +142,7 @@ void initialize(Otype& Op)
       this->Op = &Op;
 };
 
-void setLanczosCpolyParameters(long polyDegree, long repetitionFactor,
+void setLanczosCpolyParameters(RC_INT polyDegree, RC_INT repetitionFactor,
 double  lambdaMax, double shift)
 {
 	if(this->Op == nullptr)
@@ -153,7 +155,7 @@ double  lambdaMax, double shift)
 	lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
 }
 
-void initialize(long polyDegree, long repetitionFactor, 
+void initialize(RC_INT polyDegree, RC_INT repetitionFactor, 
 double  lambdaMax, double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -169,12 +171,12 @@ void setShift(double shift)
     lanczosCpoly.setShift(shift);
 }
 
-void setPolyDegree(long polyDegree)
+void setPolyDegree(RC_INT polyDegree)
 {
 	lanczosCpoly.setPolyDegree(polyDegree);
 }
 
-void setRepetitionFactor(long repetitionFactor)
+void setRepetitionFactor(RC_INT repetitionFactor)
 {
     lanczosCpoly.setRepetitionFactor(repetitionFactor);
 }
@@ -193,14 +195,14 @@ void setRepetitionFactor(long repetitionFactor)
 
 void apply(Amatrix& mArray)
 {
-    long repCount;
-    long k;
+    RC_INT repCount;
+    RC_INT k;
 
     double UpperXStar       = lanczosCpoly.UpperXStar;
     double shift            = lanczosCpoly.shift;
     double lambdaMax        = lanczosCpoly.lambdaMax;
-    long   polyDegree       = lanczosCpoly.polyDegree;
-    long   repetitionFactor = lanczosCpoly.repetitionFactor;
+    RC_INT   polyDegree       = lanczosCpoly.polyDegree;
+    RC_INT   repetitionFactor = lanczosCpoly.repetitionFactor;
 
 
     double starFactor = UpperXStar; // 1.0 - XStar;
@@ -208,7 +210,7 @@ void apply(Amatrix& mArray)
     double gamma1     = -2.0/(rhoB - 2.0*shift);
     double gamma2     =  2.0 - (4.0*shift)/rhoB;
 
-    long vSize = (long)mArray.n;
+    RC_INT vSize = (RC_INT)mArray.n;
     vn.resize(mArray.m, mArray.n);
     vnm1.resize(mArray.m, mArray.n);
     vnm2.resize(mArray.m, mArray.n);
@@ -266,8 +268,8 @@ void apply(Amatrix& mArray)
 
     LanczosCpoly lanczosCpoly;
 
-    long   polyDegree;
-    long   repetitionFactor;
+    RC_INT   polyDegree;
+    RC_INT   repetitionFactor;
     double lambdaMax;
     double shift;
     double XStar;

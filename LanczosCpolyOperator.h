@@ -117,7 +117,7 @@ LanczosCpolyOperator(const LanczosCpolyOperator& cPolyOp)
       Op  = cPolyOp.Op;
 };
 
-LanczosCpolyOperator(long polyDegree, long repetitionFactor, 
+LanczosCpolyOperator(RC_INT polyDegree, RC_INT repetitionFactor, 
 double  lambdaMax,  double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -156,7 +156,7 @@ void initialize(Otype& Op)
       this->Op = &Op;
 };
 
-void setLanczosCpolyParameters(long polyDegree, long repetitionFactor,
+void setLanczosCpolyParameters(RC_INT polyDegree, RC_INT repetitionFactor,
 double  lambdaMax, double shift)
 {
 	if(this->Op == nullptr)
@@ -171,7 +171,7 @@ double  lambdaMax, double shift)
 
 
 
-void initialize(long polyDegree, long repetitionFactor, 
+void initialize(RC_INT polyDegree, RC_INT repetitionFactor, 
 double  lambdaMax, double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -202,12 +202,12 @@ void setShift(double shift)
     lanczosCpoly.setShift(shift);
 }
 
-void setPolyDegree(long polyDegree)
+void setPolyDegree(RC_INT polyDegree)
 {
 	lanczosCpoly.setPolyDegree(polyDegree);
 }
 
-void setRepetitionFactor(long repetitionFactor)
+void setRepetitionFactor(RC_INT repetitionFactor)
 {
     lanczosCpoly.setRepetitionFactor(repetitionFactor);
 }
@@ -224,14 +224,14 @@ void setRepetitionFactor(long repetitionFactor)
 #ifndef VBLAS_
 void apply(Vtype& v)
 {
-    long repCount;
-    long k;
+    RC_INT repCount;
+    RC_INT k;
 
     double UpperXStar       = lanczosCpoly.UpperXStar;
     double shift            = lanczosCpoly.shift;
     double lambdaMax        = lanczosCpoly.lambdaMax;
-    long   polyDegree       = lanczosCpoly.polyDegree;
-    long   repetitionFactor = lanczosCpoly.repetitionFactor;
+    RC_INT   polyDegree       = lanczosCpoly.polyDegree;
+    RC_INT   repetitionFactor = lanczosCpoly.repetitionFactor;
 
 
     double starFactor = UpperXStar; // 1.0 - XStar;
@@ -288,14 +288,14 @@ void apply(Vtype& v)
 
 void apply(Vtype& v)
 {
-    long repCount;
-    long k;
+    RC_INT repCount;
+    RC_INT k;
 
     double UpperXStar       = lanczosCpoly.UpperXStar;
     double shift            = lanczosCpoly.shift;
     double lambdaMax        = lanczosCpoly.lambdaMax;
-    long   polyDegree       = lanczosCpoly.polyDegree;
-    long   repetitionFactor = lanczosCpoly.repetitionFactor;
+    RC_INT   polyDegree       = lanczosCpoly.polyDegree;
+    RC_INT   repetitionFactor = lanczosCpoly.repetitionFactor;
 
 
     double starFactor = UpperXStar; // 1.0 - XStar;

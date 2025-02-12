@@ -54,7 +54,7 @@ public:
 	}
 
 
-    RCarray2d(long rowSize, long colSize)
+    RCarray2d(RC_INT rowSize, RC_INT colSize)
 	{
 	initialize(rowSize,colSize);
 	}
@@ -69,7 +69,7 @@ public:
     colSize = 0;
 	}
 
-    void initialize(long rowSize, long colSize)
+    void initialize(RC_INT rowSize, RC_INT colSize)
     {
     arrayData.resize(rowSize*colSize,0.0);
     this->rowSize = rowSize;
@@ -84,22 +84,22 @@ public:
     arrayData = A.arrayData;
     }
 
-    long getRowSize() const
+    RC_INT getRowSize() const
     {
     return rowSize;
     }
 
-    long getColSize() const
+    RC_INT getColSize() const
     {
     return colSize;
     }
 
-    inline Dtype&  operator()(long i1, long i2)
+    inline Dtype&  operator()(RC_INT i1, RC_INT i2)
     {
     return arrayData[i1  + i2*rowSize];
     };
 
-    const inline Dtype&  operator()(long i1, long i2) const
+    const inline Dtype&  operator()(RC_INT i1, RC_INT i2) const
     {
     return arrayData[i1 + i2*rowSize];
     };
@@ -116,8 +116,8 @@ public:
 
 
 	std::vector<Dtype> arrayData;
-	long                  rowSize;
-	long                  colSize;
+	RC_INT                  rowSize;
+	RC_INT                  colSize;
 };
 
 

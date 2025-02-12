@@ -52,7 +52,7 @@
    operator *=(double alpha)          (scalar multiplication)
 
    double dot(const Vtype&)           (dot product)
-   RAY_INT getDimension() const          (returns dimension of the Vtype subspace)
+   RC_INT getDimension() const          (returns dimension of the Vtype subspace)
 
    if VBLAS_ is defined, then the Vtype class must also possess member functions
 
@@ -169,11 +169,11 @@
 #include <algorithm>
 
 #ifndef RC_WITHOUT_LAPACK_
-#include "LapackInterface/SCC_LapackMatrix.h"
-#include "LapackInterface/SCC_LapackMatrixRoutines.h"
+#include "SCC_LapackMatrix.h"
+#include "SCC_LapackMatrixRoutines.h"
 
-#include "LapackInterface/SCC_LapackMatrixCmplx16.h"
-#include "LapackInterface/SCC_LapackMatrixRoutinesCmplx16.h"
+#include "SCC_LapackMatrixCmplx16.h"
+#include "SCC_LapackMatrixRoutinesCmplx16.h"
 #endif
 
 #include "RCarray2d.h"
@@ -406,7 +406,7 @@ public:
         maxMinTol = val;
     }
 
-    void setMaxInnerLoopCount(RAY_INT val)
+    void setMaxInnerLoopCount(RC_INT val)
     {
         maxInnerLoopCount = val;
     }
@@ -476,12 +476,12 @@ public:
         return maxEigValueEst;
     }
 
-    void setMinIntervalPolyDegreeMax(RAY_INT polyDegMax)
+    void setMinIntervalPolyDegreeMax(RC_INT polyDegMax)
     {
         minIntervalPolyDegreeMax = polyDegMax;
     }
 
-    void setFilterRepetitionCount(RAY_INT repetitionCount)
+    void setFilterRepetitionCount(RC_INT repetitionCount)
     {
         filterRepetitionCount = repetitionCount;
     }
@@ -511,12 +511,12 @@ public:
         hardIntervalStopFlag = false;
     }
 
-    void setMaxSpectralBoundsIter(RAY_INT iterCount)
+    void setMaxSpectralBoundsIter(RC_INT iterCount)
     {
         lanczosMaxMinFinder.setIterationMax(iterCount);
     }
 
-    RAY_INT getSpectralBoundsIterCount()
+    RC_INT getSpectralBoundsIterCount()
     {
         return lanczosMaxMinFinder.getIterationCount();
     }
@@ -541,7 +541,7 @@ public:
         return finalData;
     }
 
-    std::map<std::string, RAY_INT> getCountData() const
+    std::map<std::string, RC_INT> getCountData() const
     {
         return countData;
     }
@@ -572,7 +572,7 @@ public:
     {
         VtAV.device_to_host();
 
-        RAY_INT rowSize = VtAV.getRowSize();
+        RC_INT rowSize = VtAV.getRowSize();
 
         if (useJacobiFlag)
         {
@@ -587,7 +587,7 @@ public:
             /////////////////////////////////////////////////////////////////////////////
             //     Calculation using LAPACK
             ////////////////////////////////////////////////////////////////////////////
-            RAY_INT colSize = VtAV.getColSize();
+            RC_INT colSize = VtAV.getColSize();
 
             using MatrixType = typename std::conditional<std::is_same<Dtype, double>::value,
                                                          SCC::LapackMatrix,
@@ -599,9 +599,9 @@ public:
             VtAVmatrix.initialize(rowSize, colSize);
             VtAVeigVectorMatrix.initialize(rowSize, colSize);
 
-            for (RAY_INT i = 0; i < rowSize; i++)
+            for (RC_INT i = 0; i < rowSize; i++)
             {
-                for (RAY_INT j = 0; j < colSize; j++)
+                for (RC_INT j = 0; j < colSize; j++)
                 {
                     VtAVmatrix(i, j) = VtAV(i, j);
                     VtAVeigVectorMatrix(i, j) = VtAVeigVector(i, j);
@@ -622,9 +622,9 @@ public:
                 static_assert(std::is_same<Dtype, double>::value || std::is_same<Dtype, std::complex<double>>::value, "Unsupported Dtype");
             }
 
-            for (RAY_INT i = 0; i < rowSize; i++)
+            for (RC_INT i = 0; i < rowSize; i++)
             {
-                for (RAY_INT j = 0; j < colSize; j++)
+                for (RC_INT j = 0; j < colSize; j++)
                 {
                     VtAVeigVectorMatrix(i, j) = VtAVeigVector(i, j) = VtAVeigVectorMatrix(i, j);
                 }
@@ -772,13 +772,13 @@ public:
     // maxEigValueBound > maxEigValue
     // minEigValueEst   > minEigValue
     //
-    RAY_INT getMinEigenSystem(RAY_INT eigCount, double minEigValueEst, double maxEigValueBound,
-                           double subspaceTol, RAY_INT subspaceIncrementSize, RAY_INT bufferSize,
+    RC_INT getMinEigenSystem(RC_INT eigCount, double minEigValueEst, double maxEigValueBound,
+                           double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize,
                            Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                            Atype &eigVectors)
     {
 
-        RAY_INT maxEigensystemDim = eigCount;
+        RC_INT maxEigensystemDim = eigCount;
         double lambdaMax = maxEigValueBound;
 
         this->clearIntervalStopCondition();
@@ -791,8 +791,8 @@ public:
     //
     //  Computes the lowest eigCount eigenvalues and eigenvectors
     //
-    RAY_INT getMinEigenSystem(RAY_INT eigCount, double subspaceTol, RAY_INT subspaceIncrementSize,
-                           RAY_INT bufferSize, Vtype &vStart, Otype &oP, VRandomizeOpType &randOp,
+    RC_INT getMinEigenSystem(RC_INT eigCount, double subspaceTol, RC_INT subspaceIncrementSize,
+                           RC_INT bufferSize, Vtype &vStart, Otype &oP, VRandomizeOpType &randOp,
                            std::vector<double> &eigValues, Atype &eigVectors)
     {
 
@@ -824,8 +824,8 @@ public:
     // return value <  0 returns error code
     //
 
-    RAY_INT getMinIntervalEigenSystem(double lambdaMax, double subspaceTol,
-                                   RAY_INT subspaceIncrementSize, RAY_INT bufferSize, RAY_INT maxEigensystemDim,
+    RC_INT getMinIntervalEigenSystem(double lambdaMax, double subspaceTol,
+                                   RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim,
                                    Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                                    Atype &eigVectors)
     {
@@ -873,8 +873,8 @@ public:
     // the minimal eigenvalue for you.
     //
 
-    RAY_INT getMinIntervalEigenSystem(double minEigValueEst, double lambdaMax, double maxEigValueBound,
-                                   double subspaceTol, RAY_INT subspaceIncrementSize, RAY_INT bufferSize, RAY_INT maxEigensystemDim,
+    RC_INT getMinIntervalEigenSystem(double minEigValueEst, double lambdaMax, double maxEigValueBound,
+                                   double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim,
                                    Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                                    Atype &eigVectors)
     {
@@ -893,8 +893,8 @@ public:
     //  specified in the eigVectors input argument.
     //
 protected:
-    RAY_INT getMinIntervalEigenSystem_Base(double minEigValue, double lambdaMax, double maxEigValue,
-                                        double subspaceTol, RAY_INT subspaceIncrementSize, RAY_INT bufferSize, RAY_INT maxEigensystemDim,
+    RC_INT getMinIntervalEigenSystem_Base(double minEigValue, double lambdaMax, double maxEigValue,
+                                        double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim,
                                         Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                                         Atype &eigVectors)
     {
@@ -945,15 +945,15 @@ protected:
 
         if (not nonRandomStartFlag)
         {
-            eigVectors.resize((RAY_INT)(vStart.getDimension()), (RAY_INT)0);
+            eigVectors.resize((RC_INT)(vStart.getDimension()), (RC_INT)0);
         }
 
-        RAY_INT returnFlag = 0;
+        RC_INT returnFlag = 0;
 
         double lambdaStar;
-        RAY_INT subspaceSize;
-        RAY_INT foundSize;
-        RAY_INT foundCount;
+        RC_INT subspaceSize;
+        RC_INT foundSize;
+        RC_INT foundCount;
 
         bool completedBasisFlag = false;
 
@@ -972,7 +972,7 @@ protected:
         // Reset sizes if subspaceSize is larger
         // than dimension of system
 
-        RAY_INT vectorDimension = vStart.getDimension();
+        RC_INT vectorDimension = vStart.getDimension();
 
         if (subspaceSize > vectorDimension)
         {
@@ -1014,8 +1014,8 @@ protected:
         VtAVeigVector.resize(subspaceSize, subspaceSize);
         tau.resize(subspaceSize, 0.0);
 
-        RAY_INT starDegree = 0;
-        RAY_INT starDegreeSave = 0;
+        RC_INT starDegree = 0;
+        RC_INT starDegreeSave = 0;
         double starBoundSave = 0.0;
         double shift = 0.0;
         double starBound = 0.0;
@@ -1025,16 +1025,16 @@ protected:
         double stopCheckValue = 0.0;
         double eigDiffRatio = 0.0;
 
-        RAY_INT residualCheckCount = 0;
-        RAY_INT innerLoopCount = 0;
+        RC_INT residualCheckCount = 0;
+        RC_INT innerLoopCount = 0;
 
         double vtvEig;
         double vtvEigCheck;
 
-        RAY_INT indexA_start;
-        RAY_INT indexA_end;
-        RAY_INT indexB_start;
-        RAY_INT indexB_end;
+        RC_INT indexA_start;
+        RC_INT indexA_end;
+        RC_INT indexB_start;
+        RC_INT indexB_end;
 
         //
         // Initialize subspace vectors using random vectors, or input
@@ -1048,13 +1048,13 @@ protected:
         }
         else
         {
-            if (subspaceSize > (RAY_INT)eigVectors.getColSize())
+            if (subspaceSize > (RC_INT)eigVectors.getColSize())
             {
 
                 randOp.randomize(mArray);
-                for (RAY_INT i = 0; i < (RAY_INT)eigVectors.getRowSize(); i++)
+                for (RC_INT i = 0; i < (RC_INT)eigVectors.getRowSize(); i++)
                 {
-                    for (RAY_INT j = 0; j < (RAY_INT)eigVectors.getColSize(); j++)
+                    for (RC_INT j = 0; j < (RC_INT)eigVectors.getColSize(); j++)
                     {
                         mArray(i, j) = eigVectors(i, j);
                     }
@@ -1077,7 +1077,7 @@ protected:
         MtVarray.clear();
         MtVarray.resize(threadCount);
 
-        for (RAY_INT k = 0; k < threadCount; k++)
+        for (RC_INT k = 0; k < threadCount; k++)
         {
             MtVarray[k].initialize(vStart);
         }
@@ -1087,8 +1087,8 @@ protected:
 
         if (vectorDimension == subspaceSize)
         {
-            RAY_INT maxOrthoCheck = 10;
-            RAY_INT orthoCheckCount = 1;
+            RC_INT maxOrthoCheck = 10;
+            RC_INT orthoCheckCount = 1;
             mArray.host_to_device();
             orthogonalize(mArray);
             mArray.device_to_host();
@@ -1139,8 +1139,8 @@ protected:
 
         int exitFlag = 0;
 
-        RAY_INT applyCount = 0;
-        RAY_INT applyCountCumulative = 0;
+        RC_INT applyCount = 0;
+        RC_INT applyCountCumulative = 0;
 
         char charBuf[256];   // To enable use of C-style formatted output
         std::string oString; // To enable use of C-style formatted output
@@ -1166,7 +1166,7 @@ protected:
             //  This step is done for cases when the routine
             //  is called to continue an existing computation.
             //
-            for (RAY_INT k = bufferSize; k < subspaceSize; k++)
+            for (RC_INT k = bufferSize; k < subspaceSize; k++)
             {
                 oldEigs[k] = oldEigs[bufferSize];
             }
@@ -1216,7 +1216,7 @@ protected:
             maxResidual = 0.0;
             maxEigDiff = 0.0;
 
-            RAY_INT oscillationCount = 0;
+            RC_INT oscillationCount = 0;
 
             while ((stopCheckValue > subspaceTol) && (innerLoopCount < maxInnerLoopCount))
             {
@@ -1413,7 +1413,7 @@ protected:
                     oString.clear();
                     snprintf(charBuf, 256, "XXXX Subspace Eigs XXXX \n");
                     oString = charBuf;
-                    for (RAY_INT i = 0; i < subspaceSize; i++)
+                    for (RC_INT i = 0; i < subspaceSize; i++)
                     {
                         snprintf(charBuf, 256, "%3ld : %+10.5e \n", i, VtAVeigValue[i]);
                         oString += charBuf;
@@ -1439,7 +1439,7 @@ protected:
                 //  over an interval.
                 //
 
-                RAY_INT eigSubspaceCheckSize;
+                RC_INT eigSubspaceCheckSize;
 
                 if (intervalStopConditionFlag)
                 {
@@ -1450,14 +1450,14 @@ protected:
                     eigSubspaceCheckSize = subspaceIncrementSize;
                 }
 
-                for (RAY_INT i = 0; i < eigSubspaceCheckSize; i++)
+                for (RC_INT i = 0; i < eigSubspaceCheckSize; i++)
                 {
                     oldEigDiffs[i] = eigDiffs[i];
                 }
 
                 maxEigDiff = 0.0;
 
-                for (RAY_INT i = 0; i < eigSubspaceCheckSize; i++)
+                for (RC_INT i = 0; i < eigSubspaceCheckSize; i++)
                 {
                     eigDiff = std::abs(VtAVeigValue[i] - oldEigs[i]);
                     relErrFactor = getRelErrorFactor(oldEigs[i], subspaceTol);
@@ -1466,7 +1466,7 @@ protected:
                     maxEigDiff = (eigDiff > maxEigDiff) ? eigDiff : maxEigDiff;
                 }
 
-                for (RAY_INT i = 0; i < subspaceSize; i++)
+                for (RC_INT i = 0; i < subspaceSize; i++)
                 {
                     oldEigs[i] = VtAVeigValue[i];
                 }
@@ -1476,11 +1476,11 @@ protected:
                 // for which the convergence tolerance has not been achieved.
                 //
 
-                RAY_INT diffCount = 0;
+                RC_INT diffCount = 0;
                 eigDiffRatio = 0.0;
                 if (maxEigDiff > subspaceTol)
                 {
-                    for (RAY_INT i = 0; i < eigSubspaceCheckSize; i++)
+                    for (RC_INT i = 0; i < eigSubspaceCheckSize; i++)
                     {
                         if (std::abs(oldEigDiffs[i]) > subspaceTol / 10.0)
                         {
@@ -1501,7 +1501,7 @@ protected:
                 double spectralRange = std::abs((lambdaMax - minEigValue));
 
                 maxGap = 0.0;
-                for (RAY_INT i = 1; i < eigSubspaceCheckSize; i++)
+                for (RC_INT i = 1; i < eigSubspaceCheckSize; i++)
                 {
                     maxGap = std::max(maxGap, std::abs(VtAVeigValue[i] - VtAVeigValue[i - 1]) / spectralRange);
                 }
@@ -1549,7 +1549,7 @@ protected:
                 // When using residual stop tolearnce force termination
                 // if residual is oscillating and has value < sqrt(subspaceTol)
                 //
-                RAY_INT rIndex;
+                RC_INT rIndex;
                 double residual2ndDiffA;
                 double residual2ndDiffB;
 
@@ -1641,7 +1641,7 @@ protected:
             //
             //  Capture the found eigenpairs
             //
-            RAY_INT checkIndexCount;
+            RC_INT checkIndexCount;
 
             if (foundSize + subspaceSize < vectorDimension)
             {
@@ -1654,7 +1654,7 @@ protected:
 
             // Check for eigenvalues less than maximal eigenvalue
 
-            for (RAY_INT i = 0; i < checkIndexCount; i++)
+            for (RC_INT i = 0; i < checkIndexCount; i++)
             {
                 vtvEig = VtAVeigValue[i];
                 relErrFactor = getRelErrorFactor(lambdaMax, subspaceTol);
@@ -1686,16 +1686,16 @@ protected:
                 eigValues.resize(foundSize + foundCount, 0.0);
 
 #pragma omp parallel for
-                for (RAY_INT i = 0; i < foundCount; i++)
+                for (RC_INT i = 0; i < foundCount; i++)
                 {
 
-                    for (RAY_INT j = 0; j < mArray.getRowSize(); j++)
+                    for (RC_INT j = 0; j < mArray.getRowSize(); j++)
                     {
                         eigVectors(j, foundSize + i) = mArray(j, i);
                     }
                 }
 
-                for (RAY_INT i = 0; i < foundCount; i++)
+                for (RC_INT i = 0; i < foundCount; i++)
                 {
                     eigValues[foundSize + i] = VtAVeigValue[i];
                     eigVecResiduals.push_back(subspaceResiduals[i]);
@@ -1718,9 +1718,9 @@ protected:
             //
             if (not exitFlag)
             {
-                for (RAY_INT k = 0; k + foundCount < subspaceSize; k++)
+                for (RC_INT k = 0; k + foundCount < subspaceSize; k++)
                 {
-                    for (RAY_INT j = 0; j < mArray.getRowSize(); j++)
+                    for (RC_INT j = 0; j < mArray.getRowSize(); j++)
                     {
                         mArrayTmp(j, k) = mArray(j, k + foundCount);
                     }
@@ -1834,7 +1834,7 @@ protected:
         //
         bool nonMonotoneFlag = false;
 
-        for (RAY_INT i = 0; i < foundSize - 1; i++)
+        for (RC_INT i = 0; i < foundSize - 1; i++)
         {
             if (eigValues[i] > eigValues[i + 1])
             {
@@ -1887,12 +1887,12 @@ protected:
         //   being less than lambdaMax
         //
         //
-        RAY_INT finalFoundCount = 0;
+        RC_INT finalFoundCount = 0;
 
         if (intervalStopConditionFlag)
         {
             relErrFactor = getRelErrorFactor(lambdaMax, subspaceTol);
-            for (RAY_INT i = 0; i < (RAY_INT)eigValues.size(); i++)
+            for (RC_INT i = 0; i < (RC_INT)eigValues.size(); i++)
             {
                 if ((eigValues[i] - lambdaMax) / relErrFactor < subspaceTol)
                 {
@@ -1900,7 +1900,7 @@ protected:
                 }
             }
 
-            if (finalFoundCount < (RAY_INT)eigValues.size())
+            if (finalFoundCount < (RC_INT)eigValues.size())
             {
                 eigValues.resize(finalFoundCount);
                 eigVectors.resize(eigVectors.getRowSize(), finalFoundCount);
@@ -1919,10 +1919,12 @@ protected:
                 *resultsStreamPtr << charBuf << std::endl;
             }
         }
+        #ifdef TIMING_
         times[0] = timeValue["ortho"];
         times[1] = timeValue["OpApply"];
         times[2] = timeValue["eigenvalue"];
         times[3] = timeValue["totalTime"];
+        #endif
         if (eigDiagnosticsFlag == 1)
         {
             oString.clear();
@@ -2114,7 +2116,7 @@ protected:
 
     void formVtAV(Atype &V)
     {
-        RAY_INT subspaceSize = (RAY_INT)V.getColSize();
+        RC_INT subspaceSize = (RC_INT)V.getColSize();
 
         // tmp = A@V
         Dtype alpha;
@@ -2176,9 +2178,9 @@ protected:
     //                  ordered by eigenvalues, algebraically smallest to largest.
     //
     void createEigenVectorsAndResiduals(Atype &VtAVeigVector, Atype &V,
-                                        RAY_INT residualCheckCount, std::vector<double> &eigVresiduals)
+                                        RC_INT residualCheckCount, std::vector<double> &eigVresiduals)
     {
-        RAY_INT subspaceSize = (RAY_INT)V.getColSize();
+        RC_INT subspaceSize = (RC_INT)V.getColSize();
 
         Dtype alpha;
         Dtype beta;
@@ -2262,7 +2264,7 @@ protected:
 
             res_residualCheckCount = residualCheckCount;
         }
-        // for (RAY_INT i = 0; i < residualCheckCount; i++)
+        // for (RC_INT i = 0; i < residualCheckCount; i++)
         // {
         //     VtAVeigValue_h[i] = VtAVeigValue[i];
         // }
@@ -2334,7 +2336,7 @@ protected:
         countData["eigenvalue"] = 0;
     }
 
-    void incrementCount(const std::string &countValue, RAY_INT increment = 1)
+    void incrementCount(const std::string &countValue, RC_INT increment = 1)
     {
         countData[countValue] += increment;
     }
@@ -2424,15 +2426,15 @@ protected:
     double maxEigValueEst;
     double maxMinTol;
 
-    RAY_INT minIntervalPolyDegreeMax;
-    RAY_INT maxInnerLoopCount;
+    RC_INT minIntervalPolyDegreeMax;
+    RC_INT maxInnerLoopCount;
     bool nonRandomStartFlag;
     bool fixedIterationCount;
-    RAY_INT filterRepetitionCount;
+    RC_INT filterRepetitionCount;
 
     RC_Types::StopCondition stopCondition;
 
-    std::map<std::string, RAY_INT> countData;
+    std::map<std::string, RC_INT> countData;
 
     std::map<std::string, double> finalData;
 
@@ -2442,7 +2444,7 @@ protected:
     ClockIt timer;
     ClockIt globalTimer;
     std::map<std::string, double> timeValue;
-    std::map<std::string, RAY_INT> timeCount;
+    std::map<std::string, RC_INT> timeCount;
 #endif
 
     // Temporaries for multi-threading

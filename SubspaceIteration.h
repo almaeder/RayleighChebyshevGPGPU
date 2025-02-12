@@ -74,7 +74,7 @@ public:
     nonRandomStartFlag = false;
     }
 
-	void applySubspaceIteration(long iterationCount, long subspaceSize, Vtype& vStart, Otype& oP,
+	void applySubspaceIteration(RC_INT iterationCount, RC_INT subspaceSize, Vtype& vStart, Otype& oP,
 	VRandomizeOpType& randOp, std::vector<double>& eigValues, std::vector < Vtype > & eigVectors,
 	bool computeEigVectorsFlag = true)
 	{
@@ -87,19 +87,19 @@ public:
     // Set up approximating subspace.
     //
 
-    long vectorDimension = vStart.getDimension();
+    RC_INT vectorDimension = vStart.getDimension();
 
     if(subspaceSize > vectorDimension) {subspaceSize = vectorDimension;}
 
     // Initialize subspace vectors using random vectors, or input
     // starting vectors if the latter is specified.
 
-    long inputSubspaceSize = (long)eigVectors.size();
+    RC_INT inputSubspaceSize = (RC_INT)eigVectors.size();
 
     if((not nonRandomStartFlag)||(inputSubspaceSize == 0))
     {
     	eigVectors.resize(subspaceSize,vStart);
-    	for(long k = 0; k < subspaceSize; k++)
+    	for(RC_INT k = 0; k < subspaceSize; k++)
     	{
     		randOp.randomize(eigVectors[k]);
     	}
@@ -109,7 +109,7 @@ public:
     	if(subspaceSize > inputSubspaceSize)
     	{
             eigVectors.resize(subspaceSize,vStart);
-    		for(long k = inputSubspaceSize-1; k < subspaceSize; k++)
+    		for(RC_INT k = inputSubspaceSize-1; k < subspaceSize; k++)
     		{
     			randOp.randomize(eigVectors[k]);
     		}
@@ -126,9 +126,9 @@ public:
 
     // Carry out iterationCount subspace iterations
 
-    for(long i = 0; i < iterationCount; i++)
+    for(RC_INT i = 0; i < iterationCount; i++)
 	{
-		for(long k = 0; k < subspaceSize; k++)
+		for(RC_INT k = 0; k < subspaceSize; k++)
 		{
    		 oP.applyForwardOp(eigVectors[k]);
     	}
@@ -147,7 +147,7 @@ public:
 //  Form Vt*A*V. This implementation assumes A is a self-adjoint
 //  matrix with respect to the associated std::vector's dot product.
 
-    long i; long j;
+    RC_INT i; RC_INT j;
 
     for(i = 0; i < subspaceSize; i++)
     {
@@ -189,7 +189,7 @@ public:
 
     std::vector < Vtype> vArrayTmp(subspaceSize);
 
-	long     k;
+	RC_INT     k;
 	double rkk;
 #ifndef VBLAS_
     //
@@ -250,18 +250,18 @@ public:
 //
 void orthogonalizeVarray(std::vector< Vtype >& vArray)
 {
-    long subspaceSize = (long)vArray.size();
+    RC_INT subspaceSize = (RC_INT)vArray.size();
 	double rkk;
 	double rkj;
 
 #ifndef VBLAS_
 //  Orthogonalize the subspace vectors using Modified Gram-Schmidt
 
-    for(long k = 1; k <= subspaceSize; k++)
+    for(RC_INT k = 1; k <= subspaceSize; k++)
     {
         rkk     = std::sqrt(vArray[k-1].dot(vArray[k-1]));
         vArray[k-1] *= 1.0/rkk;
-        for(long j = k+1; j <= subspaceSize; j++)
+        for(RC_INT j = k+1; j <= subspaceSize; j++)
         {
             rkj           =   vArray[k-1].dot(vArray[j-1]);
             vTemp         =   vArray[k-1];
@@ -272,11 +272,11 @@ void orthogonalizeVarray(std::vector< Vtype >& vArray)
 #endif
 #ifdef VBLAS_
 
-    long j;
+    RC_INT j;
 
 //  Orthogonalize the subspace vectors using modified Gram-Schmidt
 
-    for(long k = 1; k <= subspaceSize; k++)
+    for(RC_INT k = 1; k <= subspaceSize; k++)
     {
         rkk     = vArray[k-1].nrm2();
         vArray[k-1].scal(1.0/rkk);

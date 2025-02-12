@@ -94,10 +94,10 @@
 #include "Dstebz_C.h"
 
 /*
-extern "C" int dstebz_(char *range, char *order, long *n, double 
-*vl, double *vu, long *il, long *iu, double *abstol, 
-double *d__, double *e, long *m, long *nsplit, double *w, long *iblock, 
-long *isplit, double *work, long *iwork, long *info);
+extern "C" int dstebz_(char *range, char *order, RC_INT *n, double 
+*vl, double *vu, RC_INT *il, RC_INT *iu, double *abstol, 
+double *d__, double *e, RC_INT *m, RC_INT *nsplit, double *w, RC_INT *iblock, 
+RC_INT *isplit, double *work, RC_INT *iwork, RC_INT *info);
 */
 
 
@@ -112,7 +112,7 @@ LanczosMaxMinFinder()
 	initialize();
 }
 
-LanczosMaxMinFinder(long maxIterCount) 
+LanczosMaxMinFinder(RC_INT maxIterCount) 
 {
     initialize(maxIterCount);
 }
@@ -140,7 +140,7 @@ void initialize()
     resultsStreamPtr = nullptr;
 }
 
-void initialize(long maxIterCount)
+void initialize(RC_INT maxIterCount)
 {
     this->iterationMaximumCount      =  maxIterCount;
     this->verboseFlag                = 0;
@@ -169,7 +169,7 @@ double getRelErrorFactor(double val, double tol)
     return relErrFactor;
 }
 
-void  setIterationMax(long iterMax)
+void  setIterationMax(RC_INT iterMax)
 {
 	this->iterationMaximumCount = iterMax;
     alpha.resize(this->iterationMaximumCount,0.0);
@@ -219,7 +219,7 @@ void clearResultsStream()
 }
 
 
-long getIterationCount()
+RC_INT getIterationCount()
 {
 	return this->iterCount;
 }
@@ -278,9 +278,9 @@ VRandomizeOpType& randOp, double& minEigValue, double& maxEigValue)
     v      *= 0.0;              // v = 0
     wTmp   *= 0.0;              // w = 0
 
-    long k; long j;
+    RC_INT k; RC_INT j;
 
-    long nValues  = 1;
+    RC_INT nValues  = 1;
 
     double minDiffError  = 1.0e10; double maxDiffError  = 1.0e10;
     double minError      = 1.0e10; double maxError      = 1.0e10;
@@ -580,8 +580,8 @@ double getMaxEigenvalue(double errorTolerance, Vtype& v, Vtype& w, Vtype& wTmp, 
      return maxEigValue;
 }
 
-    long   iterationMaximumCount;
-    long   iterCount;
+    RC_INT   iterationMaximumCount;
+    RC_INT   iterCount;
 
     int            verboseFlag;
     int    exactDiagnosticFlag;
@@ -608,11 +608,11 @@ double getMaxEigenvalue(double errorTolerance, Vtype& v, Vtype& w, Vtype& wTmp, 
 
 
 
-std::vector<double>  getLargestSymTriEigValues(long nValues, std::vector<double> & Diag,  std::vector<double> & UpDiag)
+std::vector<double>  getLargestSymTriEigValues(RC_INT nValues, std::vector<double> & Diag,  std::vector<double> & UpDiag)
 {
-	long i;
+	RC_INT i;
 
-	long N = (long)Diag.size();
+	RC_INT N = (RC_INT)Diag.size();
 
     std::vector<double>  eVals(N);
 	std::vector<double>  eValsReturn(nValues);
@@ -621,11 +621,11 @@ std::vector<double>  getLargestSymTriEigValues(long nValues, std::vector<double>
 //
     char range    =  'I';
     char order    =  'E';
-    long n        =    N;
+    RC_INT n        =    N;
     double vLower =  0.0;
     double vUpper =  0.0;
-    long   iLower =    N-(nValues-1);       // lower computed eigenvalue index
-    long   iUpper =    N;                   // upper computed eigenvalue index
+    RC_INT   iLower =    N-(nValues-1);       // lower computed eigenvalue index
+    RC_INT   iUpper =    N;                   // upper computed eigenvalue index
 
     double abstol = 1.0e-14;
 
@@ -634,17 +634,17 @@ std::vector<double>  getLargestSymTriEigValues(long nValues, std::vector<double>
 //
 //  Output parameters 
 //
-    long mFound;   // number of eigenvalues found
-    long nsplit;   // number of diagonal blocks
+    RC_INT mFound;   // number of eigenvalues found
+    RC_INT nsplit;   // number of diagonal blocks
 
     double* ePtr   = &eVals[0]; // array for the eigenvalues
-    long*   iblock = new long[N];
-    long*   isplit = new long[N];
+    RC_INT*   iblock = new RC_INT[N];
+    RC_INT*   isplit = new RC_INT[N];
 
     double* work   = new double[4*N];   // work array
-    long*  iwork   = new long[3*N];     // work array 
+    RC_INT*  iwork   = new RC_INT[3*N];     // work array 
 
-    long   info;
+    RC_INT   info;
 
     triEigRoutine.dstebz(range, order, &n, &vLower, &vUpper, &iLower, &iUpper,
     &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
@@ -665,11 +665,11 @@ std::vector<double>  getLargestSymTriEigValues(long nValues, std::vector<double>
 	return eValsReturn;
 }
 
-std::vector<double>  getLowestSymTriEigValues(long nValues, std::vector<double> & Diag,  std::vector<double> & UpDiag)
+std::vector<double>  getLowestSymTriEigValues(RC_INT nValues, std::vector<double> & Diag,  std::vector<double> & UpDiag)
 {
-	long i;
+	RC_INT i;
 
-	long N = (long)Diag.size();
+	RC_INT N = (RC_INT)Diag.size();
 
     std::vector<double>  eVals(N);
 	std::vector<double>  eValsReturn(nValues);
@@ -678,11 +678,11 @@ std::vector<double>  getLowestSymTriEigValues(long nValues, std::vector<double> 
 //
     char range    =  'I';
     char order    =  'E';
-    long n        =    N;
+    RC_INT n        =    N;
     double vLower =  0.0;
     double vUpper =  0.0;
-    long   iLower =    1;       // lower computed eigenvalue index
-    long   iUpper =    nValues; // upper computed eigenvalue index
+    RC_INT   iLower =    1;       // lower computed eigenvalue index
+    RC_INT   iUpper =    nValues; // upper computed eigenvalue index
 
     double abstol = 1.0e-14;
 
@@ -691,17 +691,17 @@ std::vector<double>  getLowestSymTriEigValues(long nValues, std::vector<double> 
 //
 //  Output parameters 
 //
-    long mFound;   // number of eigenvalues found
-    long nsplit;   // number of diagonal blocks
+    RC_INT mFound;   // number of eigenvalues found
+    RC_INT nsplit;   // number of diagonal blocks
 
     double* ePtr   = &eVals[0]; // array for the eigenvalues
-    long*   iblock = new long[N];
-    long*   isplit = new long[N];
+    RC_INT*   iblock = new RC_INT[N];
+    RC_INT*   isplit = new RC_INT[N];
 
     double* work   = new double[4*N];   // work array
-    long*  iwork   = new long[3*N];     // work array 
+    RC_INT*  iwork   = new RC_INT[3*N];     // work array 
 
-    long   info;
+    RC_INT   info;
 
     triEigRoutine.dstebz(range, order, &n, &vLower, &vUpper, &iLower, &iUpper,
     &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 

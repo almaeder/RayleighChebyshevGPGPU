@@ -50,7 +50,7 @@
 //  <= UpperXstar
 //  <= (1- Xstar)
 //
-// This bound on x is independent of the shift sigma as long as lambda + sigma > 0.
+// This bound on x is independent of the shift sigma as RC_INT as lambda + sigma > 0.
 //
 // Another property of the scaling is that if we define the 
 // critical lambda value
@@ -123,7 +123,7 @@ LanczosCpoly(const LanczosCpoly& P)
      initialize(P);
 }
 
-LanczosCpoly(long polyDegree, long repetitionFactor, 
+LanczosCpoly(RC_INT polyDegree, RC_INT repetitionFactor, 
 double  lambdaMax,  double shift)
 {
      this->polyDegree          = polyDegree;
@@ -154,7 +154,7 @@ void initialize(const LanczosCpoly& P)
      this->UpperXStar          = P.UpperXStar;
 }
 
-void initialize(long polyDegree, long repetitionFactor, 
+void initialize(RC_INT polyDegree, RC_INT repetitionFactor, 
 double  lambdaMax, double shift)
 {
      this->polyDegree          = polyDegree;
@@ -172,13 +172,13 @@ void setShift(double shift)
     this->shift = shift;
 }
 
-void setPolyDegree(long polyDegree)
+void setPolyDegree(RC_INT polyDegree)
 {
     this->polyDegree    = polyDegree;
     this->XStar         = this->getXStar();
     this->UpperXStar    = this->getUpperXStar();
 }
-void setRepetitionFactor(long repetitionFactor)
+void setRepetitionFactor(RC_INT repetitionFactor)
 {
     this->repetitionFactor    = repetitionFactor;
 }
@@ -236,7 +236,7 @@ double evaluatePm(double x)
      if(polyDegree == 0) return 1.0;
      if(polyDegree == 1) return 1.0 - 2.0*x;
 
-     long k;
+     RC_INT k;
      double xnm1; double xnm2; double xtmp;
     // 
     // initialization of recurrance
@@ -496,7 +496,7 @@ double evaluateInversePm(double y)
 // 
 // 
 void getStarDegreeAndSpectralRadius(double shift, double lambdaBound, 
-double lambdaStar, long polyDegreeMax, long& starDegree, double& starBound)
+double lambdaStar, RC_INT polyDegreeMax, RC_INT& starDegree, double& starBound)
 {
     double lambdaStarShift = lambdaStar + shift;
     double ratio;
@@ -522,7 +522,7 @@ double lambdaStar, long polyDegreeMax, long& starDegree, double& starBound)
 //  To improve efficiency, one could use look up tables for getXstar()
 //  and getUpperXstar()
 //
-    long MB;
+    RC_INT MB;
     int exitFlag;
 
     MB       = 2;
@@ -566,7 +566,7 @@ double lambdaStar, long polyDegreeMax, long& starDegree, double& starBound)
 //
 // where m = polyDegree
 //
-void setTwoSidedParameters(double spectralRadius, long polyDegree)
+void setTwoSidedParameters(double spectralRadius, RC_INT polyDegree)
 {
     this->polyDegree       = polyDegree;
     this->shift            = spectralRadius;
@@ -593,7 +593,7 @@ void setTwoSidedParameters(double spectralRadius, long polyDegree)
 //  lambda in [spectralRadius-|lambdaStar|, spectralRadius]
 //
 //
-void getTwoSidedStarDegree(double spectralRadius, double lambdaStar, long polyDegreeMax, long& starDegree)
+void getTwoSidedStarDegree(double spectralRadius, double lambdaStar, RC_INT polyDegreeMax, RC_INT& starDegree)
 {
     //
     // We need lambdaStar > 0 so always use absolute values
@@ -611,8 +611,8 @@ void getTwoSidedStarDegree(double spectralRadius, double lambdaStar, long polyDe
     lambdaStarShift = -lambdaStar + shift;
 
 
-    long MA;
-    long MB;
+    RC_INT MA;
+    RC_INT MB;
     int exitFlag;
 
     this->polyDegree       = 1;
@@ -663,7 +663,7 @@ void getTwoSidedStarDegree(double spectralRadius, double lambdaStar, long polyDe
 //  Use a bisection procedure to bracket the solution
 //
     double valMid;
-    long   Mmid; long Mdiff;
+    RC_INT   Mmid; RC_INT Mdiff;
 
     exitFlag = 0;
     while(exitFlag == 0)
@@ -689,7 +689,7 @@ void getTwoSidedStarDegree(double spectralRadius, double lambdaStar, long polyDe
 
 
 
-double getStarBound(double lambdaStar, double shift, long starDegree)
+double getStarBound(double lambdaStar, double shift, RC_INT starDegree)
 {
 	double lambdaStarShift = lambdaStar + shift;
     double ratio;
@@ -699,8 +699,8 @@ double getStarBound(double lambdaStar, double shift, long starDegree)
     return (lambdaStarShift/ratio) - shift;
 }
 
-     long   polyDegree;
-     long   repetitionFactor;
+     RC_INT   polyDegree;
+     RC_INT   repetitionFactor;
      double lambdaMax;
      double shift;
      double XStar;

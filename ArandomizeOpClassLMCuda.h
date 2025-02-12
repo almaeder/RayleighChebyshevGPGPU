@@ -31,10 +31,8 @@
 //#
 //#############################################################################
 #pragma once
-#include <random>
 #include "AvectorClassLMCuda.h"
 #include "AmatrixClassLMCuda.h"
-#include <complex>
 
 #ifndef ARANDOMIZEOPCLASSLMCuda_
 #define ARANDOMIZEOPCLASSLMCuda_

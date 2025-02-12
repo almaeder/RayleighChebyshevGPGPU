@@ -1,10 +1,7 @@
 
 #pragma once
-#include <vector>
-#include <cmath>
 #include "AvectorClassLMCuda.h"
-#include <cuda_runtime.h>
-#include <cusparse_v2.h>
+
 
 #ifndef AMATRIXCLASSLMCuda_
 #define AMATRIXCLASSLMCuda_
@@ -33,7 +30,7 @@ class AmatrixClassLMCuda
 // but useful for creating test program
 //////////////////////////////////////////////////////////
 
-    AmatrixClassLMCuda(long m, long n)
+    AmatrixClassLMCuda(RC_INT m, RC_INT n)
 	{
 		resize(m,n);
 	}
@@ -141,7 +138,7 @@ class AmatrixClassLMCuda
 		}
 	}
 
-	void initialize(const AvectorClassLMCuda<T>& V, long n)
+	void initialize(const AvectorClassLMCuda<T>& V, RC_INT n)
 	{
 #ifdef _OPENMP
 		#pragma omp parallel for collapse(2)
@@ -191,7 +188,7 @@ class AmatrixClassLMCuda
 	}
 
 	template <typename T1>
-	T1 innerprod(const long k, const long l) const
+	T1 innerprod(const RC_INT k, const RC_INT l) const
 	{
 		if constexpr (std::is_same<T1, std::complex<double>>::value)
 		{
@@ -208,7 +205,7 @@ class AmatrixClassLMCuda
 	}
 
 
-	std::complex<double> innerprod_complex(const long k, const long l) const
+	std::complex<double> innerprod_complex(const RC_INT k, const RC_INT l) const
 	{
 #ifdef _OPENMP
 		#pragma omp declare reduction \
@@ -230,7 +227,7 @@ class AmatrixClassLMCuda
 
 	}
 
-	double innerprod_real(const long k, const long l) const
+	double innerprod_real(const RC_INT k, const RC_INT l) const
 	{
 
 		double normSquared = double(0.0);
@@ -248,7 +245,7 @@ class AmatrixClassLMCuda
 
 
 
-	void resize(long n)
+	void resize(RC_INT n)
 	{
 		mData.resize(m*n);
 		this->n = n;
@@ -256,7 +253,7 @@ class AmatrixClassLMCuda
 		create_cuda_descriptor();
 	}
 
-	void resize(long m, long n)
+	void resize(RC_INT m, RC_INT n)
 	{
 		mData.resize(m*n);
 		this->n = n;
@@ -266,7 +263,7 @@ class AmatrixClassLMCuda
 	}
 
 
-	void resize(long n, T value)
+	void resize(RC_INT n, T value)
 	{
 		if(n == this->n)
 		{
@@ -284,7 +281,7 @@ class AmatrixClassLMCuda
 	}
 	
 
-	void resize(long n, AvectorClassLMCuda<T>& V)
+	void resize(RC_INT n, AvectorClassLMCuda<T>& V)
 	{
 		if(n == this->n)
 		{
@@ -320,22 +317,22 @@ class AmatrixClassLMCuda
 	return m*n;
 	}
 
-    long getRowSize() const
+    RC_INT getRowSize() const
     {
     return m;
     }
 
-    long getColSize() const
+    RC_INT getColSize() const
     {
     return n;
     }
 
-    inline T& operator()(long i, long j)
+    inline T& operator()(RC_INT i, RC_INT j)
     {
     return mData[i  + j*m];
     };
 
-    const inline T& operator()(long i, long j) const
+    const inline T& operator()(RC_INT i, RC_INT j) const
     {
     return mData[i + j*m];
     };
@@ -353,8 +350,8 @@ class AmatrixClassLMCuda
 	T *mData_d = NULL;
 	cusparseDnMatDescr_t matrix_desc = NULL;
 
-	long n;
-	long m;
+	RC_INT n;
+	RC_INT m;
 	size_t data_type_size = sizeof(T);
 };
 

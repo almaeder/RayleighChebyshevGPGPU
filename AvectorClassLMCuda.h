@@ -36,6 +36,15 @@
 #pragma once
 #include <vector>
 #include <cmath>
+#include <stdexcept>
+#include <complex>
+#include <cuda_runtime.h>
+#include <cusparse_v2.h>
+#include <random>
+#include <iostream>
+
+#define RC_INT int
+
 
 #ifndef AVECTORCLASSLMCuda_
 #define AVECTORCLASSLMCuda_
@@ -64,7 +73,7 @@ class AvectorClassLMCuda
 // but useful for creating test program
 //////////////////////////////////////////////////////////
 
-    AvectorClassLMCuda(long dimension)
+    AvectorClassLMCuda(RC_INT dimension)
     {
         vData.resize(dimension);
     }
@@ -123,7 +132,7 @@ class AvectorClassLMCuda
 	}
 
 
-	T operator [](long k) const
+	T operator [](RC_INT k) const
 	{
 		return vData[k];
 	}
