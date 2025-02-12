@@ -4,7 +4,8 @@ The RayleighChebyshev class is a templated class with member functions for compu
 corresponding to the lowest eigenvalues of a symmetric or complex Hermitian linear operator. It is
 assumed that all of the eigenvalues of the operator are real and that there is a basis of orthogonal eigenvectors. 
 
-The eigenvalues are returned in a vector<double> instance while the eigenvectors are internally allocated and returned in a vector<Vtype> class instance.
+The eigenvalues are returned in a vector<double> instance while the eigenvectors are internally allocated
+and returned in a matrix.
 
 OpenMP multi-thread usage is enabled by defining _OPENMP
 

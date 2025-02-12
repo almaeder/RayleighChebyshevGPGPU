@@ -29,22 +29,7 @@
 
    ############################################################################
 
-   External dependencies:
-
-   This routine currently uses a call to the LAPACK routine dstebz_ to find
-   the eigenvalues of the tridiagonal system created with the Lanczos process.
-
-   To use this code on a machine with a reasonably recent version of
-   Ubuntu linux system that has lapack installed, use the compilation
-   command g++ program.cpp -llapack-3
-
-   For other Unix systems, one can try linking to -llapack -lg2c
-
-   It is important to use the -lg2c library and not the -lf2c library.
-
-
-
-	Author:  Chris Anderson
+   Author:  Chris Anderson
     Version: May 25,2023 (Now supports complex Hermitian operators)
 
 */
@@ -84,21 +69,28 @@
 #define  LANCZOS_MAX_MIN_FINDER_HERMITIAN_ERROR_TOL 1.0e-12
 #endif
 
-
+#pragma once
 #include <iostream>
 #include <cmath>
 #include <cstdio>
 #include <stdexcept>
 #include <vector>
 #include <complex>
-#include "Dstebz_C.h"
 
-/*
-extern "C" int dstebz_(char *range, char *order, RC_INT *n, double 
-*vl, double *vu, RC_INT *il, RC_INT *iu, double *abstol, 
-double *d__, double *e, RC_INT *m, RC_INT *nsplit, double *w, RC_INT *iblock, 
-RC_INT *isplit, double *work, RC_INT *iwork, RC_INT *info);
-*/
+extern "C" {
+    #ifdef USE_MKL
+    #include <mkl_blas.h>
+    #include <mkl_cblas.h>
+    #include <mkl_lapacke.h>
+    #include <mkl_lapack.h>
+    #else
+    #include <blas.h>
+    #include <cblas.h>
+    #include <lapacke.h>
+    #include <lapack.h>
+    #endif
+}
+
 
 
 
@@ -600,8 +592,6 @@ double getMaxEigenvalue(double errorTolerance, Vtype& v, Vtype& w, Vtype& wTmp, 
     std::vector<double>  eigMinVector;
     std::vector<double>  eigMaxVector;
 
-    Dstebz_C        triEigRoutine;
-
     double hermitianErrorTol;
 
     std::ostream* resultsStreamPtr;
@@ -646,9 +636,9 @@ std::vector<double>  getLargestSymTriEigValues(RC_INT nValues, std::vector<doubl
 
     RC_INT   info;
 
-    triEigRoutine.dstebz(range, order, &n, &vLower, &vUpper, &iLower, &iUpper,
-    &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
-    &info);
+    dstebz(&range, &order, &n, &vLower, &vUpper, &iLower, &iUpper,
+        &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
+        &info);
 
     /* extract return eigenvalues */
 
@@ -703,9 +693,9 @@ std::vector<double>  getLowestSymTriEigValues(RC_INT nValues, std::vector<double
 
     RC_INT   info;
 
-    triEigRoutine.dstebz(range, order, &n, &vLower, &vUpper, &iLower, &iUpper,
-    &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
-    &info);
+    dstebz(&range, &order, &n, &vLower, &vUpper, &iLower, &iUpper,
+        &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
+        &info);
 
     /* extract return eigenvalues */
 
