@@ -1,5 +1,5 @@
 /*
- * ArandomizeOpClassLMCuda.h
+ * RC_Randomize.h
  *
  *  Created on: Oct 11, 2024
  *      Author: anderson
@@ -31,18 +31,18 @@
 //#
 //#############################################################################
 #pragma once
-#include "AvectorClassLMCuda.h"
-#include "AmatrixClassLMCuda.h"
+#include "RC_Vector.h"
+#include "RC_Matrix.h"
 
-#ifndef ARANDOMIZEOPCLASSLMCuda_
-#define ARANDOMIZEOPCLASSLMCuda_
+#ifndef RCRANDOMIZE_
+#define RCRANDOMIZE_
 
 template <typename T>
-class ArandomizeOpClassLMCuda
+class RCrandomize
 {
     public:
 
-	ArandomizeOpClassLMCuda()
+	RCrandomize()
 	{
 	    seed = 3141592;
 	    randomGenerator.seed(seed);
@@ -53,7 +53,7 @@ class ArandomizeOpClassLMCuda
 	    distribution.param(distParams);
 	}
 
-	void randomize(AvectorClassLMCuda<T>& V)
+	void randomize(RCvector<T>& V)
 	{
         for(size_t i = 0; i < V.getDimension(); i++)
         {
@@ -69,7 +69,7 @@ class ArandomizeOpClassLMCuda
 		}
 	}
 
-	void randomize(AmatrixClassLMCuda<T>& M)
+	void randomize(RCmatrix<T>& M)
 	{
         for(size_t i = 0; i < M.getDimension(); i++)
         {
@@ -97,4 +97,4 @@ class ArandomizeOpClassLMCuda
 
 
 
-#endif /* ArandomizeOpClassLMCuda */
+#endif /* RCrandomize */

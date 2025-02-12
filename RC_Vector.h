@@ -1,5 +1,5 @@
 /*
- * AvectorClassLMCuda.h
+ * RC_Vector.h
  *
  * A wrapper class for std::vector<T> that adds the minimal number of
  * vector operations required to instantiate instances of the
@@ -44,11 +44,11 @@
 #include <iostream>
 #include "RC_Types.h"
 
-#ifndef AVECTORCLASSLMCuda_
-#define AVECTORCLASSLMCuda_
+#ifndef RCVECTOR_
+#define RCVECTOR_
 
 template <typename T>
-class AvectorClassLMCuda
+class RCvector
 {
 	public:
 
@@ -56,12 +56,12 @@ class AvectorClassLMCuda
 //  Required constructors
 //////////////////////////////////////////////////////////
 
-	AvectorClassLMCuda()
+	RCvector()
 	{
 	    vData.clear();
 	}
 
-    AvectorClassLMCuda(const AvectorClassLMCuda& W)
+    RCvector(const RCvector& W)
     {
         initialize(W);
     }
@@ -71,25 +71,25 @@ class AvectorClassLMCuda
 // but useful for creating test program
 //////////////////////////////////////////////////////////
 
-    AvectorClassLMCuda(RC_INT dimension)
+    RCvector(RC_INT dimension)
     {
         vData.resize(dimension);
     }
 
 
-	virtual ~AvectorClassLMCuda(){}
+	virtual ~RCvector(){}
 
 //////////////////////////////////////////////////////////////////
 //  Member functions required to use this class as a
 //  RayleighChebyshev template parameter
 //////////////////////////////////////////////////////////////////
 
-	void initialize(const AvectorClassLMCuda<T>& W)
+	void initialize(const RCvector<T>& W)
 	{
 	    vData = W.vData;
 	}
 
-	T dot(const AvectorClassLMCuda<T>& W) const
+	T dot(const RCvector<T>& W) const
 	{
 		T dotSum = 0.0;
 		for(size_t k = 0; k < vData.size(); k++)
@@ -113,7 +113,7 @@ class AvectorClassLMCuda
 	    }
 	}
 
-    void operator +=(const AvectorClassLMCuda<T>& W)
+    void operator +=(const RCvector<T>& W)
 	{
 	    for(size_t k = 0; k < vData.size(); k++)
 	    {
@@ -121,7 +121,7 @@ class AvectorClassLMCuda
 	    }
 	}
 
-	void operator -=(const AvectorClassLMCuda<T>& W)
+	void operator -=(const RCvector<T>& W)
 	{
 	    for(size_t k = 0; k < vData.size(); k++)
 	    {

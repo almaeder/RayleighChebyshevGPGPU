@@ -1,13 +1,13 @@
 
 #pragma once
-#include "AvectorClassLMCuda.h"
+#include "RC_Vector.h"
 
 
-#ifndef AMATRIXCLASSLMCuda_
-#define AMATRIXCLASSLMCuda_
+#ifndef RCMATRIX_
+#define RCMATRIX_
 
 template <typename T>
-class AmatrixClassLMCuda
+class RCmatrix
 {
 	public:
 
@@ -15,11 +15,11 @@ class AmatrixClassLMCuda
 //  Required constructors
 //////////////////////////////////////////////////////////
 
-	AmatrixClassLMCuda()
+	RCmatrix()
 	{
 	}
 
-    AmatrixClassLMCuda(const AmatrixClassLMCuda<T>& W)
+    RCmatrix(const RCmatrix<T>& W)
     {
 		resize(W.m, W.n);
         initialize(W);
@@ -30,12 +30,12 @@ class AmatrixClassLMCuda
 // but useful for creating test program
 //////////////////////////////////////////////////////////
 
-    AmatrixClassLMCuda(RC_INT m, RC_INT n)
+    RCmatrix(RC_INT m, RC_INT n)
 	{
 		resize(m,n);
 	}
 
-	~AmatrixClassLMCuda(){
+	~RCmatrix(){
 		if (matrix_desc != NULL && mData_d != NULL){
 			cusparseDestroyDnMat(matrix_desc);
 			cudaFree(mData_d);
@@ -62,7 +62,7 @@ class AmatrixClassLMCuda
 		}
 	}
 
-	void create_cuda_memory(const AmatrixClassLMCuda<T>& W){
+	void create_cuda_memory(const RCmatrix<T>& W){
 		if (W.m != m || W.n != n){
 			throw std::runtime_error("Error: Dimensions of W do not match dimensions of this matrix");
 		}
@@ -124,7 +124,7 @@ class AmatrixClassLMCuda
 	}
 
 
-	void initialize(const AmatrixClassLMCuda<T>& W)
+	void initialize(const RCmatrix<T>& W)
 	{
 #ifdef _OPENMP
 		#pragma omp parallel for collapse(2)
@@ -138,7 +138,7 @@ class AmatrixClassLMCuda
 		}
 	}
 
-	void initialize(const AvectorClassLMCuda<T>& V, RC_INT n)
+	void initialize(const RCvector<T>& V, RC_INT n)
 	{
 #ifdef _OPENMP
 		#pragma omp parallel for collapse(2)
@@ -153,7 +153,7 @@ class AmatrixClassLMCuda
 
 	}
 
-    AmatrixClassLMCuda<T>& operator=(const AmatrixClassLMCuda<T>& W) {
+    RCmatrix<T>& operator=(const RCmatrix<T>& W) {
         if (this == &W) {
             return *this;  // Check for self-assignment
         }
@@ -281,7 +281,7 @@ class AmatrixClassLMCuda
 	}
 	
 
-	void resize(RC_INT n, AvectorClassLMCuda<T>& V)
+	void resize(RC_INT n, RCvector<T>& V)
 	{
 		if(n == this->n)
 		{
