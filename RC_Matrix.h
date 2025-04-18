@@ -175,7 +175,7 @@ class RCmatrix
 			T normSquared = T(0.0);
 			for(size_t j = 0; j < m; j++)
 			{
-				normSquared += mData[k*m + j]*mData[k*m + j];
+				normSquared += mData[k*m + j]*std::conj(mData[k*m + j]);
 			}
 
 			normSquared = std::sqrt(std::abs(normSquared));
