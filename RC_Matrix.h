@@ -188,7 +188,7 @@ class RCmatrix
 	}
 
 	template <typename T1>
-	T1 innerprod(const RC_INT k, const RC_INT l) const
+	T1 inner_product(const RC_INT k, const RC_INT l) const
 	{
 		if constexpr (std::is_same<T1, std::complex<double>>::value)
 		{

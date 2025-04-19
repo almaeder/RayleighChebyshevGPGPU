@@ -1,6 +1,6 @@
 #pragma once
 #include "../../RC_abstract_operator.h"
-#include "../../RC_host_matrix.cpp"
+#include "../../RC_host_matrix.h"
 
 using CPX = std::complex<double>;
 

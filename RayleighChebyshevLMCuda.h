@@ -2250,7 +2250,7 @@ protected:
             for (size_t j = 0; j < Amatrix.get_col_size(); j++)
             {
 
-                Dtype inner_prod = Amatrix.template innerprod<Dtype>(i, j);
+                Dtype inner_prod = Amatrix.template inner_product<Dtype>(i, j);
                 if (printOrthoCheck)
                 {
                     std::cout << inner_prod << " ";

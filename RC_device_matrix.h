@@ -50,7 +50,7 @@ class RC_host_matrix : public RC_abstract_matrix<T>
 	void normalize();
 
 	template <typename T1>
-	T1 innerprod(const RC_INT k, const RC_INT l) const;
+	T1 inner_product(const RC_INT k, const RC_INT l) const;
 
 
 	std::complex<double> innerprod_complex(const RC_INT k, const RC_INT l) const;

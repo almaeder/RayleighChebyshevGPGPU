@@ -86,6 +86,22 @@ void RC_host_matrix<T>::initialize(const RCvector<T>& V, RC_INT n)
 
 template<typename T>
 void RC_host_matrix<T>::orthogonalize(){
+    // orthogonalize the columns of the matrix
+    // wiith modified gram schmidt
+
+    for(long k = 1; k <= this->n; k++)
+    {
+
+        auto rkk = std::sqrt(std::abs(this->inner_product(k-1, k-1)));
+
+        _scale(k-1, 1.0/rkk);
+        for(long j = k+1; j <= this->n; j++)
+        {
+            auto rkj =  this->inner_product(j-1, k-1); 
+
+            _scale_add(j-1, k-1, -rkj);
+        }
+    }
 }
 
 template<typename T>
@@ -130,29 +146,16 @@ void RC_host_matrix<T>::normalize()
 }
 
 template <typename T>
-template <typename T1>
-T1 RC_host_matrix<T>::innerprod(const RC_INT k, const RC_INT l) const
+T RC_host_matrix<T>::inner_product(const RC_INT k, const RC_INT l) const
 {
-    if constexpr (std::is_same<T1, std::complex<double>>::value)
-    {
-        return innerprod_complex(this,  k,l);
-    }
-    else if constexpr (std::is_same<T1, double>::value)
-    {
-        return innerprod_real(this,  k,l);
-    }
-    else
-    {
-        throw std::runtime_error("Error: innerprod_complex not defined for this type");
-    }
+    return _inner_product(this, k, l);
 }
 
-template <typename T>
-std::complex<double> innerprod_complex(RC_host_matrix<T> matrix, const RC_INT k, const RC_INT l)
+CPX _inner_product(const RC_host_matrix<CPX>* matrix, const RC_INT k, const RC_INT l)
 {
 
-    RC_INT m = matrix.get_row_size();
-    RC_INT n = matrix.get_col_size();
+    RC_INT m = matrix->get_row_size();
+    RC_INT n = matrix->get_col_size();
 
 #ifdef _OPENMP
     #pragma omp declare reduction \
@@ -167,19 +170,18 @@ std::complex<double> innerprod_complex(RC_host_matrix<T> matrix, const RC_INT k,
 #endif
     for(size_t j = 0; j < m; j++)
     {
-        normSquared += matrix.mData[k*m + j]*std::conj(matrix.mData[l*m + j]);
+        normSquared += matrix->mData[k*m + j]*std::conj(matrix->mData[l*m + j]);
     }
 
     return normSquared;
 
 }
 
-template <typename T>
-double innerprod_real(RC_host_matrix<T> matrix, const RC_INT k, const RC_INT l)
+double _inner_product(const RC_host_matrix<double>* matrix, const RC_INT k, const RC_INT l)
 {
 
-    RC_INT m = matrix.get_row_size();
-    RC_INT n = matrix.get_col_size();
+    RC_INT m = matrix->get_row_size();
+    RC_INT n = matrix->get_col_size();
 
     double normSquared = double(0.0);
 #ifdef _OPENMP
@@ -187,12 +189,37 @@ double innerprod_real(RC_host_matrix<T> matrix, const RC_INT k, const RC_INT l)
 #endif
     for(size_t j = 0; j < m; j++)
     {
-        normSquared += matrix.mData[k*m + j]*matrix.mData[l*m + j];
+        normSquared += matrix->mData[k*m + j]*matrix->mData[l*m + j];
     }
 
     return normSquared;
 
 }
+
+template <typename T>
+void RC_host_matrix<T>::_scale(const RC_INT k, const T alpha)
+{
+#ifdef _OPENMP
+    #pragma omp parallel for
+#endif
+    for(size_t j = 0; j < this->m; j++)
+    {
+        mData[k*this->m + j] *= alpha;
+    }
+}
+
+template <typename T>
+void RC_host_matrix<T>::_scale_add(const RC_INT k, const RC_INT l, const T alpha)
+{
+#ifdef _OPENMP
+    #pragma omp parallel for
+#endif
+    for(size_t j = 0; j < this->m; j++)
+    {
+        mData[k*this->m + j] += alpha * mData[l*this->m + j];
+    }
+}
+
 
 
 template<typename T>

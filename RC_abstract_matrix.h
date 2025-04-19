@@ -52,9 +52,7 @@ class RC_abstract_matrix
 
 	virtual void normalize() = 0;
 
-	template <typename T1>
-	T1 innerprod(const RC_INT k, const RC_INT l) const {};
-
+	T inner_product(const RC_INT k, const RC_INT l) const {};
 
 	virtual void resize_rows(RC_INT n) = 0;
 

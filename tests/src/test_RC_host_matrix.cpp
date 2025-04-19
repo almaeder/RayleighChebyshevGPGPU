@@ -79,3 +79,75 @@ TEST_F(
     EXPECT_EQ(rc_matrix.get_row_size(), matrix_size);
     EXPECT_EQ(rc_matrix.get_col_size(), number_of_vectors);
 }
+
+
+TEST_F(
+    matrix,
+    inner_product
+){
+
+    RC_host_matrix<CPX> rc_matrix(matrix_size, number_of_vectors, data);
+
+    for (int i = 0; i < number_of_vectors; i++) {
+
+        CPX inner_product = rc_matrix.inner_product(i, i);
+
+        CPX expected_inner_product = CPX(0.0, 0.0);
+        for (int j = 0; j < matrix_size; j++) {
+            expected_inner_product += rc_matrix.mData[i * matrix_size + j] * std::conj(rc_matrix.mData[i * matrix_size + j]);
+        }
+
+        // compare real and complex parts separately
+        ASSERT_DOUBLE_EQ(inner_product.real(), expected_inner_product.real());
+        ASSERT_DOUBLE_EQ(inner_product.imag(), expected_inner_product.imag());
+    }
+
+    for (int i = 0; i < number_of_vectors - 1; i++) {
+        CPX inner_product = rc_matrix.inner_product(i, i + 1);
+
+        CPX expected_inner_product = CPX(0.0, 0.0);
+        for (int j = 0; j < matrix_size; j++) {
+            expected_inner_product += rc_matrix.mData[i * matrix_size + j] * std::conj(rc_matrix.mData[(i + 1) * matrix_size + j]);
+        }
+
+        // compare real and complex parts separately
+        ASSERT_DOUBLE_EQ(inner_product.real(), expected_inner_product.real());
+        ASSERT_DOUBLE_EQ(inner_product.imag(), expected_inner_product.imag());
+    }
+
+}
+
+
+
+TEST_F(
+    matrix,
+    orthogonalize_matrix
+){
+
+    RC_host_matrix<CPX> rc_matrix(matrix_size, number_of_vectors, data);
+
+    rc_matrix.orthogonalize();
+
+    for (int i = 0; i < number_of_vectors; i++) {
+
+        CPX inner_product = rc_matrix.inner_product(i, i);
+
+        // compare real and complex parts separately
+        ASSERT_DOUBLE_EQ(inner_product.real(), 1);
+        ASSERT_DOUBLE_EQ(inner_product.imag(), 0);
+    }
+
+    for (int i = 0; i < number_of_vectors; i++) {
+        for (int j = 0; j < number_of_vectors; j++) {
+            if (i == j) continue;
+
+            CPX inner_product = rc_matrix.inner_product(i, j);
+
+            // compare real and complex parts separately
+            ASSERT_NEAR(inner_product.real(), 0, 1e-15);
+            ASSERT_NEAR(inner_product.imag(), 0, 1e-15);
+        }
+    }
+
+
+}

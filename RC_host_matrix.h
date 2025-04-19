@@ -51,13 +51,11 @@ class RC_host_matrix : public RC_abstract_matrix<T, RC_host_matrix<T>>
 
 	void normalize();
 
-	template <typename T1>
-	T1 innerprod(const RC_INT k, const RC_INT l) const;
+	T inner_product(const RC_INT k, const RC_INT l) const;
 
+	void _scale(const RC_INT k, const T alpha);
+	void _scale_add(const RC_INT k, const RC_INT l, const T alpha);
 
-	std::complex<double> innerprod_complex(const RC_INT k, const RC_INT l) const;
-
-	double innerprod_real(const RC_INT k, const RC_INT l) const;
 
 	void resize_rows(RC_INT n);
 

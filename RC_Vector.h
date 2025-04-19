@@ -76,6 +76,11 @@ class RCvector
         vData.resize(dimension);
     }
 
+    RCvector(std::vector<T>& data)
+	{
+		vData = data;
+	}
+
 
 	virtual ~RCvector(){}
 
