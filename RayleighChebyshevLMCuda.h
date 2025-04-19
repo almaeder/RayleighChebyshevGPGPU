@@ -52,7 +52,7 @@
    operator *=(double alpha)          (scalar multiplication)
 
    double dot(const Vtype&)           (dot product)
-   RC_INT getDimension() const          (returns dimension of the Vtype subspace)
+   RC_INT get_size() const          (returns dimension of the Vtype subspace)
 
    if VBLAS_ is defined, then the Vtype class must also possess member functions
 
@@ -543,12 +543,12 @@ public:
     {
         VtAV.device_to_host();
 
-        RC_INT rowSize = VtAV.getRowSize();
+        RC_INT rowSize = VtAV.get_row_size();
 
         /////////////////////////////////////////////////////////////////////////////
         //     Calculation using LAPACK
         ////////////////////////////////////////////////////////////////////////////
-        RC_INT colSize = VtAV.getColSize();
+        RC_INT colSize = VtAV.get_col_size();
 
         using MatrixType = typename std::conditional<std::is_same<Dtype, double>::value,
                                                         SCC::LapackMatrix,
@@ -900,7 +900,7 @@ protected:
 
         if (not nonRandomStartFlag)
         {
-            eigVectors.resize((RC_INT)(vStart.getDimension()), (RC_INT)0);
+            eigVectors.resize((RC_INT)(vStart.get_size()), (RC_INT)0);
         }
 
         RC_INT returnFlag = 0;
@@ -927,7 +927,7 @@ protected:
         // Reset sizes if subspaceSize is larger
         // than dimension of system
 
-        RC_INT vectorDimension = vStart.getDimension();
+        RC_INT vectorDimension = vStart.get_size();
 
         if (subspaceSize > vectorDimension)
         {
@@ -960,8 +960,8 @@ protected:
         // been found
         //
 
-        mArray.resize(vStart.getDimension(), subspaceSize);
-        mArrayTmp.resize(vStart.getDimension(), subspaceSize);
+        mArray.resize(vStart.get_size(), subspaceSize);
+        mArrayTmp.resize(vStart.get_size(), subspaceSize);
 
         VtAVeigValue.resize(subspaceSize, 0.0);
 
@@ -1003,13 +1003,13 @@ protected:
         }
         else
         {
-            if (subspaceSize > (RC_INT)eigVectors.getColSize())
+            if (subspaceSize > (RC_INT)eigVectors.get_col_size())
             {
 
                 randOp.randomize(mArray);
-                for (RC_INT i = 0; i < (RC_INT)eigVectors.getRowSize(); i++)
+                for (RC_INT i = 0; i < (RC_INT)eigVectors.get_row_size(); i++)
                 {
-                    for (RC_INT j = 0; j < (RC_INT)eigVectors.getColSize(); j++)
+                    for (RC_INT j = 0; j < (RC_INT)eigVectors.get_col_size(); j++)
                     {
                         mArray(i, j) = eigVectors(i, j);
                     }
@@ -1644,7 +1644,7 @@ protected:
                 for (RC_INT i = 0; i < foundCount; i++)
                 {
 
-                    for (RC_INT j = 0; j < mArray.getRowSize(); j++)
+                    for (RC_INT j = 0; j < mArray.get_row_size(); j++)
                     {
                         eigVectors(j, foundSize + i) = mArray(j, i);
                     }
@@ -1675,7 +1675,7 @@ protected:
             {
                 for (RC_INT k = 0; k + foundCount < subspaceSize; k++)
                 {
-                    for (RC_INT j = 0; j < mArray.getRowSize(); j++)
+                    for (RC_INT j = 0; j < mArray.get_row_size(); j++)
                     {
                         mArrayTmp(j, k) = mArray(j, k + foundCount);
                     }
@@ -1800,7 +1800,7 @@ protected:
         if (nonMonotoneFlag)
         {
             eigVectors.host_to_device();
-            foundSize = eigVectors.getColSize();
+            foundSize = eigVectors.get_col_size();
             mArrayTmp.resize(foundSize, vStart);
 
             VtAV.resize(foundSize, foundSize);
@@ -1858,7 +1858,7 @@ protected:
             if (finalFoundCount < (RC_INT)eigValues.size())
             {
                 eigValues.resize(finalFoundCount);
-                eigVectors.resize(eigVectors.getRowSize(), finalFoundCount);
+                eigVectors.resize(eigVectors.get_row_size(), finalFoundCount);
                 eigVecResiduals.resize(finalFoundCount);
                 foundSize = finalFoundCount;
             }
@@ -1938,44 +1938,44 @@ protected:
 
         if (tau_d == NULL)
         {
-            cudaErrchk(cudaMalloc((void **)&tau_d, sizeof(Dtype) * M.getColSize()));
+            cudaErrchk(cudaMalloc((void **)&tau_d, sizeof(Dtype) * M.get_col_size()));
         }
-        else if (M.getColSize() > tau_n)
+        else if (M.get_col_size() > tau_n)
         {
             cudaErrchk(cudaFree(tau_d));
-            cudaErrchk(cudaMalloc((void **)&tau_d, sizeof(Dtype) * M.getColSize()));
-            tau_n = M.getColSize();
+            cudaErrchk(cudaMalloc((void **)&tau_d, sizeof(Dtype) * M.get_col_size()));
+            tau_n = M.get_col_size();
         }
 
-        if (M.getRowSize() > geqrf_m || M.getColSize() > geqrf_n)
+        if (M.get_row_size() > geqrf_m || M.get_col_size() > geqrf_n)
         {
             cudaErrchk(cudaFree(geqrf_work_d));
             cudaErrchk(cudaFree(gqr_work_d));
 
-            geqrf_m = M.getRowSize();
-            geqrf_n = M.getColSize();
+            geqrf_m = M.get_row_size();
+            geqrf_n = M.get_col_size();
         }
 
-        if (geqrf_work_d == NULL || (M.getRowSize() > geqrf_m || M.getColSize() > geqrf_n))
+        if (geqrf_work_d == NULL || (M.get_row_size() > geqrf_m || M.get_col_size() > geqrf_n))
         {
 
             if constexpr (std::is_same<Dtype, double>::value)
             {
                 cusolverErrchk(cusolverDnDgeqrf_bufferSize(
                     cusolverDn_handle,
-                    M.getRowSize(),
-                    M.getColSize(),
+                    M.get_row_size(),
+                    M.get_col_size(),
                     M.getDataPointer_d(),
-                    M.getRowSize(),
+                    M.get_row_size(),
                     &geqrf_lwork));
 
                 cusolverErrchk(cusolverDnDorgqr_bufferSize(
                     cusolverDn_handle,
-                    M.getRowSize(),
-                    M.getColSize(),
-                    M.getColSize(),
+                    M.get_row_size(),
+                    M.get_col_size(),
+                    M.get_col_size(),
                     M.getDataPointer_d(),
-                    M.getRowSize(),
+                    M.get_row_size(),
                     tau_d,
                     &gqr_lwork));
 
@@ -1986,20 +1986,20 @@ protected:
             {
                 cusolverErrchk(cusolverDnZgeqrf_bufferSize(
                     cusolverDn_handle,
-                    M.getRowSize(),
-                    M.getColSize(),
+                    M.get_row_size(),
+                    M.get_col_size(),
                     (cuDoubleComplex *)M.getDataPointer_d(),
-                    M.getRowSize(),
+                    M.get_row_size(),
                     &geqrf_lwork));
 
                 cusolverErrchk(
                     cusolverDnZungqr_bufferSize(
                         cusolverDn_handle,
-                        M.getRowSize(),
-                        M.getColSize(),
-                        M.getColSize(),
+                        M.get_row_size(),
+                        M.get_col_size(),
+                        M.get_col_size(),
                         (cuDoubleComplex *)M.getDataPointer_d(),
-                        M.getRowSize(),
+                        M.get_row_size(),
                         (cuDoubleComplex *)tau_d,
                         &gqr_lwork));
                 cudaErrchk(cudaMalloc((void **)&geqrf_work_d, sizeof(Dtype) * geqrf_lwork));
@@ -2016,10 +2016,10 @@ protected:
         {
             cusolverErrchk(cusolverDnDgeqrf(
                 cusolverDn_handle,
-                M.getRowSize(),
-                M.getColSize(),
+                M.get_row_size(),
+                M.get_col_size(),
                 M.getDataPointer_d(),
-                M.getRowSize(),
+                M.get_row_size(),
                 tau_d,
                 geqrf_work_d,
                 geqrf_lwork,
@@ -2027,11 +2027,11 @@ protected:
 
             cusolverErrchk(cusolverDnDorgqr(
                 cusolverDn_handle,
-                M.getRowSize(),
-                M.getColSize(),
-                M.getColSize(),
+                M.get_row_size(),
+                M.get_col_size(),
+                M.get_col_size(),
                 M.getDataPointer_d(),
-                M.getRowSize(),
+                M.get_row_size(),
                 tau_d,
                 gqr_work_d,
                 gqr_lwork,
@@ -2041,21 +2041,21 @@ protected:
         {
             cusolverErrchk(cusolverDnZgeqrf(
                 cusolverDn_handle,
-                M.getRowSize(),
-                M.getColSize(),
+                M.get_row_size(),
+                M.get_col_size(),
                 (cuDoubleComplex *)M.getDataPointer_d(),
-                M.getRowSize(),
+                M.get_row_size(),
                 (cuDoubleComplex *)tau_d,
                 (cuDoubleComplex *)geqrf_work_d,
                 geqrf_lwork,
                 info_d));
             cusolverErrchk(cusolverDnZungqr(
                 cusolverDn_handle,
-                M.getRowSize(),
-                M.getColSize(),
-                M.getColSize(),
+                M.get_row_size(),
+                M.get_col_size(),
+                M.get_col_size(),
                 (cuDoubleComplex *)M.getDataPointer_d(),
-                M.getRowSize(),
+                M.get_row_size(),
                 (cuDoubleComplex *)tau_d,
                 (cuDoubleComplex *)gqr_work_d,
                 gqr_lwork,
@@ -2071,7 +2071,7 @@ protected:
 
     void formVtAV(Atype &V)
     {
-        RC_INT subspaceSize = (RC_INT)V.getColSize();
+        RC_INT subspaceSize = (RC_INT)V.get_col_size();
 
         // tmp = A@V
         Dtype alpha;
@@ -2097,12 +2097,12 @@ protected:
                 cublasDgemm(
                     cublas_handle,
                     CUBLAS_OP_T, CUBLAS_OP_N,
-                    mArrayTmp.getColSize(), mArrayTmp.getColSize(), mArrayTmp.getRowSize(),
+                    mArrayTmp.get_col_size(), mArrayTmp.get_col_size(), mArrayTmp.get_row_size(),
                     &alpha,
-                    V.getDataPointer_d(), mArrayTmp.getRowSize(),
-                    mArrayTmp.getDataPointer_d(), mArrayTmp.getRowSize(),
+                    V.getDataPointer_d(), mArrayTmp.get_row_size(),
+                    mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size(),
                     &beta,
-                    VtAV.getDataPointer_d(), mArrayTmp.getColSize()));
+                    VtAV.getDataPointer_d(), mArrayTmp.get_col_size()));
         }
         else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
         {
@@ -2110,12 +2110,12 @@ protected:
                 cublasZgemm(
                     cublas_handle,
                     CUBLAS_OP_C, CUBLAS_OP_N,
-                    mArrayTmp.getColSize(), mArrayTmp.getColSize(), mArrayTmp.getRowSize(),
+                    mArrayTmp.get_col_size(), mArrayTmp.get_col_size(), mArrayTmp.get_row_size(),
                     (cuDoubleComplex *)&alpha,
-                    (cuDoubleComplex *)V.getDataPointer_d(), mArrayTmp.getRowSize(),
-                    (cuDoubleComplex *)mArrayTmp.getDataPointer_d(), mArrayTmp.getRowSize(),
+                    (cuDoubleComplex *)V.getDataPointer_d(), mArrayTmp.get_row_size(),
+                    (cuDoubleComplex *)mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size(),
                     (cuDoubleComplex *)&beta,
-                    (cuDoubleComplex *)VtAV.getDataPointer_d(), mArrayTmp.getColSize()));
+                    (cuDoubleComplex *)VtAV.getDataPointer_d(), mArrayTmp.get_col_size()));
         }
     }
 
@@ -2135,7 +2135,7 @@ protected:
     void createEigenVectorsAndResiduals(Atype &VtAVeigVector, Atype &V,
                                         RC_INT residualCheckCount, std::vector<double> &eigVresiduals)
     {
-        RC_INT subspaceSize = (RC_INT)V.getColSize();
+        RC_INT subspaceSize = (RC_INT)V.get_col_size();
 
         Dtype alpha;
         Dtype beta;
@@ -2158,12 +2158,12 @@ protected:
                 cublasDgemm(
                     cublas_handle,
                     CUBLAS_OP_N, CUBLAS_OP_N,
-                    mArrayTmp.getRowSize(), mArrayTmp.getColSize(), mArrayTmp.getColSize(),
+                    mArrayTmp.get_row_size(), mArrayTmp.get_col_size(), mArrayTmp.get_col_size(),
                     &alpha,
-                    V.getDataPointer_d(), V.getRowSize(),
-                    VtAVeigVector.getDataPointer_d(), VtAVeigVector.getRowSize(),
+                    V.getDataPointer_d(), V.get_row_size(),
+                    VtAVeigVector.getDataPointer_d(), VtAVeigVector.get_row_size(),
                     &beta,
-                    mArrayTmp.getDataPointer_d(), mArrayTmp.getRowSize()));
+                    mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size()));
         }
         else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
         {
@@ -2171,23 +2171,23 @@ protected:
                 cublasZgemm(
                     cublas_handle,
                     CUBLAS_OP_N, CUBLAS_OP_N,
-                    mArrayTmp.getRowSize(), mArrayTmp.getColSize(), mArrayTmp.getColSize(),
+                    mArrayTmp.get_row_size(), mArrayTmp.get_col_size(), mArrayTmp.get_col_size(),
                     (cuDoubleComplex *)&alpha,
-                    (cuDoubleComplex *)V.getDataPointer_d(), V.getRowSize(),
-                    (cuDoubleComplex *)VtAVeigVector.getDataPointer_d(), VtAVeigVector.getRowSize(),
+                    (cuDoubleComplex *)V.getDataPointer_d(), V.get_row_size(),
+                    (cuDoubleComplex *)VtAVeigVector.getDataPointer_d(), VtAVeigVector.get_row_size(),
                     (cuDoubleComplex *)&beta,
-                    (cuDoubleComplex *)mArrayTmp.getDataPointer_d(), mArrayTmp.getRowSize()));
+                    (cuDoubleComplex *)mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size()));
         }
 
 
         cuda_kernels::normalize(
             mArrayTmp.getDataPointer_d(),
-            mArrayTmp.getRowSize(),
-            mArrayTmp.getColSize()
+            mArrayTmp.get_row_size(),
+            mArrayTmp.get_col_size()
         );
 
         cudaErrchk(cudaMemcpy(V.getDataPointer_d(),
-                              mArrayTmp.getDataPointer_d(), sizeof(Dtype) * mArrayTmp.getDimension(), cudaMemcpyDeviceToDevice));
+                              mArrayTmp.getDataPointer_d(), sizeof(Dtype) * mArrayTmp.get_size(), cudaMemcpyDeviceToDevice));
 
         OpPtr->apply(V, mArrayTmp, alpha, beta);
 
@@ -2233,7 +2233,7 @@ protected:
             mArrayTmp.getDataPointer_d(),
             V.getDataPointer_d(),
             VtAVeigValue_d,
-            mArrayTmp.getRowSize(),
+            mArrayTmp.get_row_size(),
             residualCheckCount);
 
         eigVresiduals.resize(residualCheckCount, 0.0);
@@ -2245,9 +2245,9 @@ protected:
     {
         double orthoErrorMax = 0.0;
 
-        for (size_t i = 0; i < Amatrix.getColSize(); i++)
+        for (size_t i = 0; i < Amatrix.get_col_size(); i++)
         {
-            for (size_t j = 0; j < Amatrix.getColSize(); j++)
+            for (size_t j = 0; j < Amatrix.get_col_size(); j++)
             {
 
                 Dtype inner_prod = Amatrix.template innerprod<Dtype>(i, j);

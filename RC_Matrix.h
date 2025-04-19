@@ -312,17 +312,17 @@ class RCmatrix
 	}
 
 
-	size_t getDimension() const
+	size_t get_size() const
 	{
 	return m*n;
 	}
 
-    RC_INT getRowSize() const
+    RC_INT get_row_size() const
     {
     return m;
     }
 
-    RC_INT getColSize() const
+    RC_INT get_col_size() const
     {
     return n;
     }

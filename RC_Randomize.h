@@ -55,7 +55,7 @@ class RCrandomize
 
 	void randomize(RCvector<T>& V)
 	{
-        for(size_t i = 0; i < V.getDimension(); i++)
+        for(size_t i = 0; i < V.get_size(); i++)
         {
 			if constexpr (std::is_same<T, double>::value)
 			{
@@ -71,7 +71,7 @@ class RCrandomize
 
 	void randomize(RCmatrix<T>& M)
 	{
-        for(size_t i = 0; i < M.getDimension(); i++)
+        for(size_t i = 0; i < M.get_size(); i++)
         {
 			if constexpr (std::is_same<T, double>::value)
 			{

@@ -141,7 +141,7 @@ class RCvector
 		return std::sqrt(std::abs(normSquared));
 	}
 
-	size_t getDimension() const
+	size_t get_size() const
 	{
 	return vData.size();
 	}

@@ -91,7 +91,7 @@ public:
     // Set up approximating subspace.
     //
 
-    RC_INT vectorDimension = vStart.getDimension();
+    RC_INT vectorDimension = vStart.get_size();
 
     if(subspaceSize > vectorDimension) {subspaceSize = vectorDimension;}
 

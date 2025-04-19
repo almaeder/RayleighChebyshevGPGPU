@@ -2,3 +2,4 @@ push*
 .hg
 .hgignore
 .hgsub
+.vscode
