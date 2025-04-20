@@ -1,77 +1,109 @@
 
-// #pragma once
-// #include "RC_Vector.h"
-// #include "RC_Abstract_Matrix.h"
+#pragma once
+#include "RC_Vector.h"
+#include "RC_host_matrix.h"
 
-// #ifndef RC_HOST_MATRIX_
-// #define RC_HOST_MATRIX_
+#ifndef RC_DEVICE_MATRIX_
+#define RC_DEVICE_MATRIX_
 
-// template <typename T>
-// class RC_host_matrix : public RC_abstract_matrix<T>
-// {
-// 	public:
+template <typename T>
+class RC_device_matrix : public RC_host_matrix<T>
+{
+public:
+	//////////////////////////////////////////////////////////
+	//  Required constructors
+	//////////////////////////////////////////////////////////
 
-// //////////////////////////////////////////////////////////
-// //  Required constructors
-// //////////////////////////////////////////////////////////
+	RC_device_matrix();
 
-// 	RC_host_matrix();
+	RC_device_matrix(const RC_device_matrix<T> &W);
 
-//     RC_host_matrix(const RC_host_matrix<T>& W);
+	//////////////////////////////////////////////////////////
+	// Constructor not required for RayleighChebyshve
+	// but useful for creating test program
+	//////////////////////////////////////////////////////////
 
-// //////////////////////////////////////////////////////////
-// // Constructor not required for RayleighChebyshve
-// // but useful for creating test program
-// //////////////////////////////////////////////////////////
+	RC_device_matrix(RC_INT m, RC_INT n);
 
-//     RC_host_matrix(RC_INT m, RC_INT n);
+	RC_device_matrix(RC_INT m, RC_INT n, std::vector<T> data);
 
-// 	~RC_host_matrix();
+	~RC_device_matrix();
 
-// //////////////////////////////////////////////////////////////////
-// //  Member functions required to use this class as a
-// //  RayleighChebyshev template parameter
-// //////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////
+	//  Member functions required to use this class as a
+	//  RayleighChebyshev template parameter
+	//////////////////////////////////////////////////////////////////
 
+	void host_to_device_copy();
 
-// 	void host_to_device_copy();
+	void device_to_host_copy();
 
-// 	void device_to_host_copy();
+	void device_to_device_copy(const RC_device_matrix<T>& W);
 
+	void initialize(const RC_device_matrix<T> &W);
 
-// 	void initialize(const RC_host_matrix<T>& W);
+	void initialize(const RCvector<T> &V, RC_INT n);
 
-// 	void initialize(const RCvector<T>& V, RC_INT n);
+	void orthogonalize();
 
-// 	void orthogonalize();
+	RC_device_matrix<T> &operator=(const RC_device_matrix<T> &W);
 
-//     RC_host_matrix<T>& operator=(const RC_host_matrix<T>& W);
+    inline T& operator()(RC_INT i, RC_INT j)
+	{
+		return mData[i  + j*this->m];
+	};
 
-// 	void normalize();
+    const inline T& operator()(RC_INT i, RC_INT j) const
+	{
+	return mData[i + j*this->m];
+	};
 
-// 	template <typename T1>
-// 	T1 inner_product(const RC_INT k, const RC_INT l) const;
+	void normalize();
 
+	T inner_product(const RC_INT k, const RC_INT l) const;
 
-// 	std::complex<double> innerprod_complex(const RC_INT k, const RC_INT l) const;
+	void _scale(const RC_INT k, const T alpha);
+	void _scale_add(const RC_INT k, const RC_INT l, const T alpha);
 
-// 	double innerprod_real(const RC_INT k, const RC_INT l) const;
+	void resize_rows(RC_INT n);
 
-// 	void resize_rows(RC_INT n);
+	void resize_rows(RC_INT n, T value);
 
+	void resize_rows(RC_INT n, RCvector<T> &V);
 
-// 	void resize_rows(RC_INT n, T value);
-	
+	void resize(RC_INT m, RC_INT n);
 
-// 	void resize_rows(RC_INT n, RCvector<T>& V);
+	void matmult(const RC_device_matrix<T>& A, const RC_device_matrix<T>& B, T alpha, T beta);
 
-// 	void resize(RC_INT m, RC_INT n);
+	void matmult(const RC_device_matrix<T>& A, const RC_device_matrix<T>& B, T alpha, T beta, std::string conj_A, std::string conj_B);
 
-// 	std::vector<T> mData;
+	void residuals(const RC_device_matrix<T> &OpA, const std::vector<double> &eig_values, std::vector<double> &eig_residuals, RC_INT residualCheckCount);
 
-// 	RC_INT n;
-// 	RC_INT m;
-// };
+	void substract(const RC_device_matrix<T> &A);
 
+	void scale(const T alpha);
 
-// #endif /* RC_HOST_MATRIX_ */
+	std::vector<T> mData;
+};
+
+#endif /* RC_DEVICE_MATRIX_ */
+
+#ifndef RC_DEVICE_RANDOMIZE_
+#define RC_DEVICE_RANDOMIZE_
+
+template <typename T>
+class RC_device_randomize : public RC_host_randomize<T>
+{
+public:
+	RC_device_randomize();
+
+	void randomize(RCvector<T> &V);
+
+	void randomize(RC_device_matrix<T> &M);
+
+	int seed;
+	std::mt19937_64 randomGenerator;
+	std::uniform_real_distribution<double> distribution;
+};
+
+#endif /* RC_DEVICE_RANDOMIZE_ */

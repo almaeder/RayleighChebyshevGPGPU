@@ -135,8 +135,8 @@ TEST_F(
         }
 
         // compare real and complex parts separately
-        ASSERT_DOUBLE_EQ(inner_product.real(), expected_inner_product.real());
-        ASSERT_DOUBLE_EQ(inner_product.imag(), expected_inner_product.imag());
+        ASSERT_NEAR(inner_product.real(), expected_inner_product.real(), 1e-15);
+        ASSERT_NEAR(inner_product.imag(), expected_inner_product.imag(), 1e-15);
     }
 
     for (int i = 0; i < number_of_vectors - 1; i++) {
@@ -148,8 +148,8 @@ TEST_F(
         }
 
         // compare real and complex parts separately
-        ASSERT_DOUBLE_EQ(inner_product.real(), expected_inner_product.real());
-        ASSERT_DOUBLE_EQ(inner_product.imag(), expected_inner_product.imag());
+        ASSERT_NEAR(inner_product.real(), expected_inner_product.real(), 1e-15);
+        ASSERT_NEAR(inner_product.imag(), expected_inner_product.imag(), 1e-15);
     }
 
 }
@@ -186,5 +186,141 @@ TEST_F(
         }
     }
 
+}
+
+TEST_F(
+    matrix,
+    matmult
+){
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0, 1);
+    CPX alpha = CPX(dis(gen), dis(gen));
+    CPX beta = CPX(dis(gen), dis(gen));
+
+    RC_INT m = 5;
+    RC_INT n = 3;
+    RC_INT k = 4;
+
+    std::vector<CPX> A(m * k);
+    std::vector<CPX> B(k * n);
+    std::vector<CPX> C(m * n);
+    for (int i = 0; i < m * k; i++) {
+        A[i] = CPX(dis(gen), dis(gen));
+    }
+    for (int i = 0; i < k * n; i++) {
+        B[i] = CPX(dis(gen), dis(gen));
+    }
+    for (int i = 0; i < m * n; i++) {
+        C[i] = CPX(dis(gen), dis(gen));
+    }
+    
+    std::vector<CPX> C_ref(m * n);
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            C_ref[i + j * m] = CPX(0.0, 0.0);
+            for (int l = 0; l < k; l++) {
+                C_ref[i + j * m] += A[i + l * m] * B[l + j * k];
+            }
+            C_ref[i + j * m] = alpha * C_ref[i + j * m] + beta * C[i + j * m];
+        }
+    }
+
+    RC_host_matrix<CPX> A_matrix(m, k, A);
+    RC_host_matrix<CPX> B_matrix(k, n, B);
+    RC_host_matrix<CPX> C_matrix(m, n, C);
+
+    C_matrix.matmult(A_matrix, B_matrix, alpha, beta);
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            ASSERT_NEAR(C_matrix(i, j).real(), C_ref[i + j * m].real(), 1e-15);
+            ASSERT_NEAR(C_matrix(i, j).imag(), C_ref[i + j * m].imag(), 1e-15);
+        }
+    }
+}
+
+TEST_F(
+    matrix,
+    matmult_conjA
+){
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0, 1);
+    CPX alpha = CPX(dis(gen), dis(gen));
+    CPX beta = CPX(dis(gen), dis(gen));
+
+    RC_INT m = 5;
+    RC_INT n = 3;
+    RC_INT k = 4;
+
+    std::vector<CPX> A(m * k);
+    std::vector<CPX> B(k * n);
+    std::vector<CPX> C(m * n);
+    for (int i = 0; i < m * k; i++) {
+        A[i] = CPX(dis(gen), dis(gen));
+    }
+    for (int i = 0; i < k * n; i++) {
+        B[i] = CPX(dis(gen), dis(gen));
+    }
+    for (int i = 0; i < m * n; i++) {
+        C[i] = CPX(dis(gen), dis(gen));
+    }
+    
+    std::vector<CPX> C_ref(m * n);
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            C_ref[i + j * m] = CPX(0.0, 0.0);
+            for (int l = 0; l < k; l++) {
+                C_ref[i + j * m] += std::conj(A[l + i * k]) * B[l + j * k];
+            }
+            C_ref[i + j * m] = alpha * C_ref[i + j * m] + beta * C[i + j * m];
+        }
+    }
+
+    RC_host_matrix<CPX> A_matrix(k, m, A);
+    RC_host_matrix<CPX> B_matrix(k, n, B);
+    RC_host_matrix<CPX> C_matrix(m, n, C);
+
+    C_matrix.matmult(A_matrix, B_matrix, alpha, beta, "C", "N");
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            ASSERT_NEAR(C_matrix(i, j).real(), C_ref[i + j * m].real(), 1e-15);
+            ASSERT_NEAR(C_matrix(i, j).imag(), C_ref[i + j * m].imag(), 1e-15);
+        }
+    }
+}
+
+TEST_F(
+    matrix,
+    residuals
+){
+    RC_host_matrix<CPX> rc_matrix_ref(matrix_size, number_of_vectors, data);
+    RC_host_matrix<CPX> rc_matrix(rc_matrix_ref);
+
+    std::vector<double> eig_values(number_of_vectors);
+    std::vector<double> eig_residuals(number_of_vectors);
+
+    for (int i = 0; i < number_of_vectors; i++) {
+        eig_values[i] = 1.0;
+    }
+    rc_matrix.residuals(rc_matrix_ref, eig_values, eig_residuals, number_of_vectors);
+
+    std::vector<double> eig_residuals_ref(number_of_vectors);
+
+    for (int i = 0; i < number_of_vectors; i++) {
+        CPX normSquared = CPX(0.0, 0.0);
+        for(int j = 0; j < matrix_size; j++) {
+            normSquared += (rc_matrix_ref(i, j) - eig_values[i] * rc_matrix(i, j)) * std::conj(rc_matrix_ref(i, j) - eig_values[i] * rc_matrix(i, j));
+        }
+        eig_residuals_ref[i] = std::sqrt(std::abs(normSquared));
+    }
+
+    for (int i = 0; i < number_of_vectors; i++) {
+        ASSERT_NEAR(eig_residuals[i], eig_residuals_ref[i], 1e-15);
+    }
 
 }

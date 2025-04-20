@@ -1,5 +1,5 @@
 
-#include "RC_host_matrix.h"
+#include "RC_device_matrix.h"
 
 typedef std::complex<double> CPX;
 
@@ -7,12 +7,12 @@ typedef std::complex<double> CPX;
 //  Required constructors
 //////////////////////////////////////////////////////////
 template <typename T>
-RC_host_matrix<T>::RC_host_matrix()
+RC_device_matrix<T>::RC_device_matrix()
 {
 }
 
 template <typename T>
-RC_host_matrix<T>::RC_host_matrix(const RC_host_matrix<T> &W)
+RC_device_matrix<T>::RC_device_matrix(const RC_device_matrix<T> &W)
 {
     resize(W.m, W.n);
     initialize(W);
@@ -24,13 +24,13 @@ RC_host_matrix<T>::RC_host_matrix(const RC_host_matrix<T> &W)
 //////////////////////////////////////////////////////////
 
 template <typename T>
-RC_host_matrix<T>::RC_host_matrix(RC_INT m, RC_INT n)
+RC_device_matrix<T>::RC_device_matrix(RC_INT m, RC_INT n)
 {
     resize(m, n);
 }
 
 template <typename T>
-RC_host_matrix<T>::RC_host_matrix(RC_INT m, RC_INT n, std::vector<T> data)
+RC_device_matrix<T>::RC_device_matrix(RC_INT m, RC_INT n, std::vector<T> data)
 {
     this->mData = data;
     this->n = n;
@@ -38,7 +38,7 @@ RC_host_matrix<T>::RC_host_matrix(RC_INT m, RC_INT n, std::vector<T> data)
 }
 
 template <typename T>
-RC_host_matrix<T>::~RC_host_matrix()
+RC_device_matrix<T>::~RC_device_matrix()
 {
 }
 
@@ -48,17 +48,17 @@ RC_host_matrix<T>::~RC_host_matrix()
 //////////////////////////////////////////////////////////////////
 
 template <typename T>
-void RC_host_matrix<T>::host_to_device_copy()
+void RC_device_matrix<T>::host_to_device_copy()
 {
 }
 
 template <typename T>
-void RC_host_matrix<T>::device_to_host_copy()
+void RC_device_matrix<T>::device_to_host_copy()
 {
 }
 
 template <typename T>
-void RC_host_matrix<T>::device_to_device_copy(const RC_host_matrix<T> &W)
+void RC_device_matrix<T>::device_to_device_copy(const RC_device_matrix<T> &W)
 {
     // this is m by n
     // W is m by n
@@ -79,7 +79,7 @@ void RC_host_matrix<T>::device_to_device_copy(const RC_host_matrix<T> &W)
 }
 
 template <typename T>
-void RC_host_matrix<T>::initialize(const RC_host_matrix<T> &W)
+void RC_device_matrix<T>::initialize(const RC_device_matrix<T> &W)
 {
 #ifdef _OPENMP
 #pragma omp parallel for collapse(2)
@@ -94,7 +94,7 @@ void RC_host_matrix<T>::initialize(const RC_host_matrix<T> &W)
 }
 
 template <typename T>
-void RC_host_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
+void RC_device_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
 {
 #ifdef _OPENMP
 #pragma omp parallel for collapse(2)
@@ -109,7 +109,7 @@ void RC_host_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
 }
 
 template <typename T>
-void RC_host_matrix<T>::orthogonalize()
+void RC_device_matrix<T>::orthogonalize()
 {
     // orthogonalize the columns of the matrix
     // wiith modified gram schmidt
@@ -130,7 +130,7 @@ void RC_host_matrix<T>::orthogonalize()
 }
 
 template <typename T>
-RC_host_matrix<T> &RC_host_matrix<T>::operator=(const RC_host_matrix<T> &W)
+RC_device_matrix<T> &RC_device_matrix<T>::operator=(const RC_device_matrix<T> &W)
 {
     if (this == &W)
     {
@@ -144,7 +144,7 @@ RC_host_matrix<T> &RC_host_matrix<T>::operator=(const RC_host_matrix<T> &W)
 }
 
 template <typename T>
-void RC_host_matrix<T>::normalize()
+void RC_device_matrix<T>::normalize()
 {
 #ifdef _OPENMP
 #pragma omp parallel for
@@ -172,12 +172,12 @@ void RC_host_matrix<T>::normalize()
 }
 
 template <typename T>
-T RC_host_matrix<T>::inner_product(const RC_INT k, const RC_INT l) const
+T RC_device_matrix<T>::inner_product(const RC_INT k, const RC_INT l) const
 {
     return _innerprod(this, k, l);
 }
 
-CPX _innerprod(const RC_host_matrix<CPX> *matrix, const RC_INT k, const RC_INT l)
+CPX _innerprod(const RC_device_matrix<CPX> *matrix, const RC_INT k, const RC_INT l)
 {
 
     RC_INT m = matrix->get_row_size();
@@ -200,7 +200,7 @@ CPX _innerprod(const RC_host_matrix<CPX> *matrix, const RC_INT k, const RC_INT l
     return normSquared;
 }
 
-double _innerprod(const RC_host_matrix<double> *matrix, const RC_INT k, const RC_INT l)
+double _innerprod(const RC_device_matrix<double> *matrix, const RC_INT k, const RC_INT l)
 {
 
     RC_INT m = matrix->get_row_size();
@@ -219,7 +219,7 @@ double _innerprod(const RC_host_matrix<double> *matrix, const RC_INT k, const RC
 }
 
 template <typename T>
-void RC_host_matrix<T>::_scale(const RC_INT k, const T alpha)
+void RC_device_matrix<T>::_scale(const RC_INT k, const T alpha)
 {
 #ifdef _OPENMP
 #pragma omp parallel for
@@ -231,7 +231,7 @@ void RC_host_matrix<T>::_scale(const RC_INT k, const T alpha)
 }
 
 template <typename T>
-void RC_host_matrix<T>::_scale_add(const RC_INT k, const RC_INT l, const T alpha)
+void RC_device_matrix<T>::_scale_add(const RC_INT k, const RC_INT l, const T alpha)
 {
 #ifdef _OPENMP
 #pragma omp parallel for
@@ -243,14 +243,14 @@ void RC_host_matrix<T>::_scale_add(const RC_INT k, const RC_INT l, const T alpha
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize_rows(RC_INT n)
+void RC_device_matrix<T>::resize_rows(RC_INT n)
 {
     mData.resize(this->m * n);
     this->n = n;
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize_rows(RC_INT n, T value)
+void RC_device_matrix<T>::resize_rows(RC_INT n, T value)
 {
     if (n == this->n)
     {
@@ -267,7 +267,7 @@ void RC_host_matrix<T>::resize_rows(RC_INT n, T value)
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize_rows(RC_INT n, RCvector<T> &V)
+void RC_device_matrix<T>::resize_rows(RC_INT n, RCvector<T> &V)
 {
     if (n == this->n)
     {
@@ -296,7 +296,7 @@ void RC_host_matrix<T>::resize_rows(RC_INT n, RCvector<T> &V)
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize(RC_INT m, RC_INT n)
+void RC_device_matrix<T>::resize(RC_INT m, RC_INT n)
 {
     mData.resize(m * n);
     this->n = n;
@@ -304,7 +304,7 @@ void RC_host_matrix<T>::resize(RC_INT m, RC_INT n)
 }
 
 template <typename T>
-void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix<T> &B, T alpha, T beta)
+void RC_device_matrix<T>::matmult(const RC_device_matrix<T> &A, const RC_device_matrix<T> &B, T alpha, T beta)
 {
     // this is m by n
     // A is m by k
@@ -330,7 +330,7 @@ void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix
 }
 
 template <typename T>
-void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix<T> &B, T alpha, T beta, std::string conj_A, std::string conj_B)
+void RC_device_matrix<T>::matmult(const RC_device_matrix<T> &A, const RC_device_matrix<T> &B, T alpha, T beta, std::string conj_A, std::string conj_B)
 {
     // this is m by n
     // A is m by k
@@ -424,7 +424,7 @@ void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix
 }
 
 template <typename T>
-void RC_host_matrix<T>::residuals(const RC_host_matrix<T> &OpA, const std::vector<double> &eig_values, std::vector<double> &eig_residuals, RC_INT residualCheckCount)
+void RC_device_matrix<T>::residuals(const RC_device_matrix<T> &OpA, const std::vector<double> &eig_values, std::vector<double> &eig_residuals, RC_INT residualCheckCount)
 {
 
     if (residualCheckCount > this->n)
@@ -460,7 +460,7 @@ void RC_host_matrix<T>::residuals(const RC_host_matrix<T> &OpA, const std::vecto
 }
 
 template <typename T>
-void RC_host_matrix<T>::substract(const RC_host_matrix<T> &A){
+void RC_device_matrix<T>::substract(const RC_device_matrix<T> &A){
     if (this->m != A.m || this->n != A.n)
     {
         throw std::runtime_error("Error: matrix sizes do not match");
@@ -477,7 +477,7 @@ void RC_host_matrix<T>::substract(const RC_host_matrix<T> &A){
 }
 
 template <typename T>
-void RC_host_matrix<T>::scale(const T alpha)
+void RC_device_matrix<T>::scale(const T alpha)
 {
     for (size_t i = 0; i < this->m; i++)
     {
@@ -490,11 +490,11 @@ void RC_host_matrix<T>::scale(const T alpha)
 }
 
 
-template class RC_host_matrix<double>;
-template class RC_host_matrix<CPX>;
+template class RC_device_matrix<double>;
+template class RC_device_matrix<CPX>;
 
 template <typename T>
-RC_host_randomize<T>::RC_host_randomize()
+RC_device_randomize<T>::RC_device_randomize()
 {
     seed = 3141592;
     randomGenerator.seed(seed);
@@ -505,7 +505,7 @@ RC_host_randomize<T>::RC_host_randomize()
 }
 
 template <typename T>
-void RC_host_randomize<T>::randomize(RCvector<T> &V)
+void RC_device_randomize<T>::randomize(RCvector<T> &V)
 {
     for (size_t i = 0; i < V.get_size(); i++)
     {
@@ -526,7 +526,7 @@ void RC_host_randomize<T>::randomize(RCvector<T> &V)
 }
 
 template <typename T>
-void RC_host_randomize<T>::randomize(RC_host_matrix<T> &M)
+void RC_device_randomize<T>::randomize(RC_device_matrix<T> &M)
 {
     for (size_t i = 0; i < M.get_size(); i++)
     {
@@ -546,5 +546,5 @@ void RC_host_randomize<T>::randomize(RC_host_matrix<T> &M)
     }
 }
 
-template class RC_host_randomize<double>;
-template class RC_host_randomize<CPX>;
+template class RC_device_randomize<double>;
+template class RC_device_randomize<CPX>;

@@ -208,14 +208,15 @@ void apply(Amatrix& mArray)
     double gamma1     = -2.0/(rhoB - 2.0*shift);
     double gamma2     =  2.0 - (4.0*shift)/rhoB;
 
-    RC_INT vSize = (RC_INT)mArray.n;
-    vn.resize(mArray.m, mArray.n);
-    vnm1.resize(mArray.m, mArray.n);
-    vnm2.resize(mArray.m, mArray.n);
+    RC_INT vSize = (RC_INT)mArray.get_col_size();
+    vn.resize(mArray.get_row_size(), mArray.get_col_size());
+    vnm1.resize(mArray.get_row_size(), mArray.get_col_size());
+    vnm2.resize(mArray.get_row_size(), mArray.get_col_size());
 
-    cudaErrchk(cudaMemcpy(vn.mData_d, mArray.mData_d, vnm2.get_size()*mArray.data_type_size, cudaMemcpyDeviceToDevice));
-    cudaErrchk(cudaMemcpy(vnm1.mData_d, mArray.mData_d, vnm2.get_size()*mArray.data_type_size, cudaMemcpyDeviceToDevice));
-    cudaErrchk(cudaMemcpy(vnm2.mData_d, mArray.mData_d, vnm2.get_size()*mArray.data_type_size, cudaMemcpyDeviceToDevice));
+    vn.device_to_device_copy(mArray);
+    vnm1.device_to_device_copy(mArray);
+    vnm2.device_to_device_copy(mArray);
+
 
     vnArrayPtr   = &vn;
     vnm1ArrayPtr = &vnm1;
@@ -230,9 +231,10 @@ void apply(Amatrix& mArray)
         //
         if(repCount != 1)
         {
-            cudaErrchk(cudaMemcpy((*vnm2ArrayPtr).mData_d, (*vnm1ArrayPtr).mData_d, vnm2.get_size()*mArray.data_type_size, cudaMemcpyDeviceToDevice));
+            (*vnm2ArrayPtr).device_to_device_copy((*vnm1ArrayPtr));
         }
 
+        std::cout << "repCount = " << repCount << std::endl;
         Op->apply(*vnm2ArrayPtr, *vnm1ArrayPtr, gamma2*gamma1, gamma2);
 
         // 
@@ -240,11 +242,11 @@ void apply(Amatrix& mArray)
         //
         for(k = 2; k <= polyDegree; k++)
         {
-            cudaErrchk(cudaMemcpy((*vnArrayPtr).mData_d, (*vnm1ArrayPtr).mData_d, vnm2.get_size()*mArray.data_type_size, cudaMemcpyDeviceToDevice));
+            (*vnArrayPtr).device_to_device_copy((*vnm1ArrayPtr));
 
             Op->apply(*vnm1ArrayPtr, *vnArrayPtr, gamma2*gamma1, gamma2);
 
-            cuda_kernels::substract((*vnArrayPtr).mData_d, (*vnm2ArrayPtr).mData_d, vnm2.get_size());
+            (*vnArrayPtr).substract(*vnm2ArrayPtr);
 
             // 
             // swap pointers to implicitly shift the 
@@ -256,11 +258,11 @@ void apply(Amatrix& mArray)
             vnArrayPtr   = vTmpArrayPtr;
         }
 
-        cuda_kernels::scale((*vnm1ArrayPtr).mData_d, vnm2.get_size(), 1.0/double(polyDegree+1));
+        (*vnm1ArrayPtr).scale(1.0/double(polyDegree+1));
 
      }
 
-    cudaErrchk(cudaMemcpy(mArray.mData_d, (*vnm1ArrayPtr).mData_d, vnm2.get_size()*mArray.data_type_size, cudaMemcpyDeviceToDevice));
+    mArray.device_to_device_copy(*vnm1ArrayPtr);
 
 }
 

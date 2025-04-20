@@ -1045,7 +1045,7 @@ protected:
             RC_INT maxOrthoCheck = 10;
             RC_INT orthoCheckCount = 1;
             mArray.host_to_device_copy();
-            orthogonalize(mArray);
+            mArray.orthogonalize();
             mArray.device_to_host_copy();
 
             // Due to instability of modified Gram-Schmidt for creating an
@@ -1056,7 +1056,7 @@ protected:
             {
                 orthoCheckCount += 1;
                 mArray.host_to_device_copy();
-                orthogonalize(mArray);
+                mArray.orthogonalize();
                 mArray.device_to_host_copy();
             }
 
@@ -1144,11 +1144,8 @@ protected:
 
 
             mArray.host_to_device_copy();
-            // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
-            // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
-            // std::cout << std::endl;
-            orthogonalize(mArray);
-            orthogonalize(mArray);
+            mArray.orthogonalize();
+            mArray.orthogonalize();
 
             incrementTime("ortho");
             incrementCount("ortho", 2);
@@ -1258,10 +1255,6 @@ protected:
 
                 startTimer();
 
-                // mArray.host_to_device_copy();
-                // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
-                // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
-                // std::cout << std::endl;
                 if (not completedBasisFlag)
                 {
                     cOp.apply(mArray);
@@ -1286,7 +1279,7 @@ protected:
                 //  It is important to do this before orthgonalizing the new vectors with respect to each other.
 
                 //  Orthogonalize the subspace vectors using Modified Gram-Schmidt
-                orthogonalize(mArray);
+                mArray.orthogonalize();
 
                 incrementTime("ortho");
                 incrementCount("ortho");
@@ -1297,10 +1290,6 @@ protected:
                 //
                 startTimer();
     
-                // mArray.device_to_host_copy();
-                // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
-                // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
-
                 formVtAV(mArray);
 
                 incrementCount("OpApply", subspaceSize);
@@ -1310,8 +1299,6 @@ protected:
                 /////////////////////////////////////////////////////////////////////////////
 
                 computeVtVeigensystem(VtAV, VtAVeigValue, VtAVeigVector);
-
-                // std::cout << VtAVeigValue[0] << " " << VtAVeigValue[1] << std::endl;
 
                 /////////////////////////////////////////////////////////////////////////////
                 // Compute new approximations to eigenvectors and evaluate selected residuals
@@ -1333,18 +1320,7 @@ protected:
                 subspaceResiduals.clear();
 
 
-                // std::cout << "residualCheckCount " << residualCheckCount << std::endl;
-                // std::cout << "VtAVeigValue.size() " << VtAVeigValue.size() << std::endl;
-                // std::cout << "VtAVeigValue " << VtAVeigValue[0] << " " << VtAVeigValue[1] << std::endl;
-
                 createEigenVectorsAndResiduals(VtAVeigVector, mArray, residualCheckCount, subspaceResiduals);
-
-                // mArray.device_to_host_copy();
-                // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
-                // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
-                // std::cout << std::endl;
-                // std::cout << subspaceResiduals[0] << std::endl;
-                // exit(0);
 
                 incrementCount("OpApply", residualCheckCount);
 
@@ -1637,7 +1613,7 @@ protected:
             if (foundCount > 0)
             {
                 mArray.device_to_host_copy();
-                eigVectors.resize(foundSize + foundCount, vStart);
+                eigVectors.resize_rows(foundSize + foundCount, vStart);
                 eigValues.resize(foundSize + foundCount, 0.0);
 
 #pragma omp parallel for
@@ -1751,7 +1727,7 @@ protected:
                         subspaceIncrementSize = vectorDimension - foundSize;
                         subspaceSize = subspaceIncrementSize;
                         completedBasisFlag = true;
-                        mArray.resize(subspaceSize);
+                        mArray.resize_rows(subspaceSize);
 
                         randOp.randomize(mArray);
                     }
@@ -1759,10 +1735,10 @@ protected:
                     {
                         bufferSize = vectorDimension - (foundSize + subspaceIncrementSize);
                         subspaceSize = subspaceIncrementSize + bufferSize;
-                        mArray.resize(subspaceSize);
+                        mArray.resize_rows(subspaceSize);
                     }
 
-                    mArrayTmp.resize(subspaceSize);
+                    mArrayTmp.resize_rows(subspaceSize);
 
                     VtAV.resize(subspaceSize, subspaceSize);
                     VtAVeigVector.initialize(subspaceSize, subspaceSize);
@@ -1801,7 +1777,7 @@ protected:
         {
             eigVectors.host_to_device_copy();
             foundSize = eigVectors.get_col_size();
-            mArrayTmp.resize(foundSize, vStart);
+            mArrayTmp.resize_rows(foundSize, vStart);
 
             VtAV.resize(foundSize, foundSize);
             VtAVeigVector.initialize(foundSize, foundSize);
@@ -1933,135 +1909,6 @@ protected:
     //
     /////////////////////////////////////////////////////////////////////
 
-    void orthogonalize(Atype &M)
-    {
-
-        if (tau_d == NULL)
-        {
-            cudaErrchk(cudaMalloc((void **)&tau_d, sizeof(Dtype) * M.get_col_size()));
-        }
-        else if (M.get_col_size() > tau_n)
-        {
-            cudaErrchk(cudaFree(tau_d));
-            cudaErrchk(cudaMalloc((void **)&tau_d, sizeof(Dtype) * M.get_col_size()));
-            tau_n = M.get_col_size();
-        }
-
-        if (M.get_row_size() > geqrf_m || M.get_col_size() > geqrf_n)
-        {
-            cudaErrchk(cudaFree(geqrf_work_d));
-            cudaErrchk(cudaFree(gqr_work_d));
-
-            geqrf_m = M.get_row_size();
-            geqrf_n = M.get_col_size();
-        }
-
-        if (geqrf_work_d == NULL || (M.get_row_size() > geqrf_m || M.get_col_size() > geqrf_n))
-        {
-
-            if constexpr (std::is_same<Dtype, double>::value)
-            {
-                cusolverErrchk(cusolverDnDgeqrf_bufferSize(
-                    cusolverDn_handle,
-                    M.get_row_size(),
-                    M.get_col_size(),
-                    M.getDataPointer_d(),
-                    M.get_row_size(),
-                    &geqrf_lwork));
-
-                cusolverErrchk(cusolverDnDorgqr_bufferSize(
-                    cusolverDn_handle,
-                    M.get_row_size(),
-                    M.get_col_size(),
-                    M.get_col_size(),
-                    M.getDataPointer_d(),
-                    M.get_row_size(),
-                    tau_d,
-                    &gqr_lwork));
-
-                cudaErrchk(cudaMalloc((void **)&geqrf_work_d, sizeof(Dtype) * geqrf_lwork));
-                cudaErrchk(cudaMalloc((void **)&gqr_work_d, sizeof(Dtype) * gqr_lwork));
-            }
-            else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
-            {
-                cusolverErrchk(cusolverDnZgeqrf_bufferSize(
-                    cusolverDn_handle,
-                    M.get_row_size(),
-                    M.get_col_size(),
-                    (cuDoubleComplex *)M.getDataPointer_d(),
-                    M.get_row_size(),
-                    &geqrf_lwork));
-
-                cusolverErrchk(
-                    cusolverDnZungqr_bufferSize(
-                        cusolverDn_handle,
-                        M.get_row_size(),
-                        M.get_col_size(),
-                        M.get_col_size(),
-                        (cuDoubleComplex *)M.getDataPointer_d(),
-                        M.get_row_size(),
-                        (cuDoubleComplex *)tau_d,
-                        &gqr_lwork));
-                cudaErrchk(cudaMalloc((void **)&geqrf_work_d, sizeof(Dtype) * geqrf_lwork));
-                cudaErrchk(cudaMalloc((void **)&gqr_work_d, sizeof(Dtype) * gqr_lwork));
-            }
-        }
-
-        if (info_d == NULL)
-        {
-            cudaErrchk(cudaMalloc((void **)&info_d, sizeof(int)));
-        }
-
-        if constexpr (std::is_same<Dtype, double>::value)
-        {
-            cusolverErrchk(cusolverDnDgeqrf(
-                cusolverDn_handle,
-                M.get_row_size(),
-                M.get_col_size(),
-                M.getDataPointer_d(),
-                M.get_row_size(),
-                tau_d,
-                geqrf_work_d,
-                geqrf_lwork,
-                info_d));
-
-            cusolverErrchk(cusolverDnDorgqr(
-                cusolverDn_handle,
-                M.get_row_size(),
-                M.get_col_size(),
-                M.get_col_size(),
-                M.getDataPointer_d(),
-                M.get_row_size(),
-                tau_d,
-                gqr_work_d,
-                gqr_lwork,
-                info_d));
-        }
-        else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
-        {
-            cusolverErrchk(cusolverDnZgeqrf(
-                cusolverDn_handle,
-                M.get_row_size(),
-                M.get_col_size(),
-                (cuDoubleComplex *)M.getDataPointer_d(),
-                M.get_row_size(),
-                (cuDoubleComplex *)tau_d,
-                (cuDoubleComplex *)geqrf_work_d,
-                geqrf_lwork,
-                info_d));
-            cusolverErrchk(cusolverDnZungqr(
-                cusolverDn_handle,
-                M.get_row_size(),
-                M.get_col_size(),
-                M.get_col_size(),
-                (cuDoubleComplex *)M.getDataPointer_d(),
-                M.get_row_size(),
-                (cuDoubleComplex *)tau_d,
-                (cuDoubleComplex *)gqr_work_d,
-                gqr_lwork,
-                info_d));
-        }
-    }
 
     // Assumes the operator is symmetric (or complex Hermitian).
     //
@@ -2091,32 +1938,8 @@ protected:
         // VtAV = Vt@tmp
         OpPtr->apply(V, mArrayTmp, alpha, beta);
 
-        if constexpr (std::is_same<Dtype, double>::value)
-        {
-            cublasErrchk(
-                cublasDgemm(
-                    cublas_handle,
-                    CUBLAS_OP_T, CUBLAS_OP_N,
-                    mArrayTmp.get_col_size(), mArrayTmp.get_col_size(), mArrayTmp.get_row_size(),
-                    &alpha,
-                    V.getDataPointer_d(), mArrayTmp.get_row_size(),
-                    mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size(),
-                    &beta,
-                    VtAV.getDataPointer_d(), mArrayTmp.get_col_size()));
-        }
-        else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
-        {
-            cublasErrchk(
-                cublasZgemm(
-                    cublas_handle,
-                    CUBLAS_OP_C, CUBLAS_OP_N,
-                    mArrayTmp.get_col_size(), mArrayTmp.get_col_size(), mArrayTmp.get_row_size(),
-                    (cuDoubleComplex *)&alpha,
-                    (cuDoubleComplex *)V.getDataPointer_d(), mArrayTmp.get_row_size(),
-                    (cuDoubleComplex *)mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size(),
-                    (cuDoubleComplex *)&beta,
-                    (cuDoubleComplex *)VtAV.getDataPointer_d(), mArrayTmp.get_col_size()));
-        }
+        VtAV.matmult(V, mArrayTmp, alpha, beta, "C", "N");
+
     }
 
     //
@@ -2151,94 +1974,21 @@ protected:
             beta = std::complex<double>(0.0, 0.0);
         }
 
-        // e = V@e_tilde
-        if constexpr (std::is_same<Dtype, double>::value)
-        {
-            cublasErrchk(
-                cublasDgemm(
-                    cublas_handle,
-                    CUBLAS_OP_N, CUBLAS_OP_N,
-                    mArrayTmp.get_row_size(), mArrayTmp.get_col_size(), mArrayTmp.get_col_size(),
-                    &alpha,
-                    V.getDataPointer_d(), V.get_row_size(),
-                    VtAVeigVector.getDataPointer_d(), VtAVeigVector.get_row_size(),
-                    &beta,
-                    mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size()));
-        }
-        else if constexpr (std::is_same<Dtype, std::complex<double>>::value)
-        {
-            cublasErrchk(
-                cublasZgemm(
-                    cublas_handle,
-                    CUBLAS_OP_N, CUBLAS_OP_N,
-                    mArrayTmp.get_row_size(), mArrayTmp.get_col_size(), mArrayTmp.get_col_size(),
-                    (cuDoubleComplex *)&alpha,
-                    (cuDoubleComplex *)V.getDataPointer_d(), V.get_row_size(),
-                    (cuDoubleComplex *)VtAVeigVector.getDataPointer_d(), VtAVeigVector.get_row_size(),
-                    (cuDoubleComplex *)&beta,
-                    (cuDoubleComplex *)mArrayTmp.getDataPointer_d(), mArrayTmp.get_row_size()));
-        }
+        mArrayTmp.matmult(V, VtAVeigVector, alpha, beta);
 
+        mArrayTmp.normalize();
 
-        cuda_kernels::normalize(
-            mArrayTmp.getDataPointer_d(),
-            mArrayTmp.get_row_size(),
-            mArrayTmp.get_col_size()
-        );
-
-        cudaErrchk(cudaMemcpy(V.getDataPointer_d(),
-                              mArrayTmp.getDataPointer_d(), sizeof(Dtype) * mArrayTmp.get_size(), cudaMemcpyDeviceToDevice));
+        V.device_to_device_copy(mArrayTmp);
 
         OpPtr->apply(V, mArrayTmp, alpha, beta);
 
-        if (res_residualCheckCount != residualCheckCount)
-        {
-            if (eigVresiduals_d != NULL)
-            {
-                cudaErrchk(cudaFree(eigVresiduals_d));
-            }
-            cudaErrchk(cudaMalloc((void **)&eigVresiduals_d, sizeof(double) * residualCheckCount));
-
-            if (VtAVeigValue_d != NULL)
-            {
-                cudaErrchk(cudaFree(VtAVeigValue_d));
-            }
-            cudaErrchk(cudaMalloc((void **)&VtAVeigValue_d, sizeof(double) * residualCheckCount));
-
-            if (eigVresiduals_h != NULL)
-            {
-                delete[] eigVresiduals_h;
-            }
-            eigVresiduals_h = new double[residualCheckCount];
-
-            if (VtAVeigValue_h != NULL)
-            {
-                delete[] VtAVeigValue_h;
-            }
-            VtAVeigValue_h = new double[residualCheckCount];
-
-            res_residualCheckCount = residualCheckCount;
-        }
-        // for (RC_INT i = 0; i < residualCheckCount; i++)
-        // {
-        //     VtAVeigValue_h[i] = VtAVeigValue[i];
-        // }
-
-        cudaErrchk(cudaMemcpy(VtAVeigValue_d,
-                              VtAVeigValue.data(), sizeof(double) * residualCheckCount, cudaMemcpyHostToDevice));
-
-        // AV - EV
-        cuda_kernels::residuals(
-            eigVresiduals_d,
-            mArrayTmp.getDataPointer_d(),
-            V.getDataPointer_d(),
-            VtAVeigValue_d,
-            mArrayTmp.get_row_size(),
+        eigVresiduals.resize(residualCheckCount, 0.0);
+        V.residuals(
+            mArrayTmp,
+            VtAVeigValue,
+            eigVresiduals,
             residualCheckCount);
 
-        eigVresiduals.resize(residualCheckCount, 0.0);
-        cudaErrchk(cudaMemcpy(eigVresiduals.data(),
-                              eigVresiduals_d, sizeof(double) * residualCheckCount, cudaMemcpyDeviceToHost));
     }
 
     double OrthogonalityCheck(Atype &Amatrix, bool printOrthoCheck = false)
@@ -2250,7 +2000,7 @@ protected:
             for (size_t j = 0; j < Amatrix.get_col_size(); j++)
             {
 
-                Dtype inner_prod = Amatrix.template inner_product<Dtype>(i, j);
+                Dtype inner_prod = Amatrix.inner_product(i, j);
                 if (printOrthoCheck)
                 {
                     std::cout << inner_prod << " ";

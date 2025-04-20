@@ -56,7 +56,7 @@ TEST_F(
 
     for (int i = 0; i < matrix_size; i++)
     {
-        EXPECT_EQ(rc_operator.data[i], std::complex<double>(i + 1, i + 1));
+        EXPECT_EQ(rc_operator.data[i], std::complex<double>(i + 1, 0));
     }
 }
 
@@ -75,7 +75,7 @@ TEST_F(
     {
         for (int i = 0; i < matrix_size; i++)
         {
-            EXPECT_EQ(rc_matrix.mData[i + j * matrix_size], std::complex<double>(i + 1, i + 1) * data[i + j * matrix_size]);
+            EXPECT_EQ(rc_matrix.mData[i + j * matrix_size], std::complex<double>(i + 1, 0) * data[i + j * matrix_size]);
         }
     }
 }
@@ -99,7 +99,7 @@ TEST_F(
     {
         for (int i = 0; i < matrix_size; i++)
         {
-            EXPECT_EQ(rc_matrix_out.mData[i + j * matrix_size], alpha * std::complex<double>(i + 1, i + 1) * data[i + j * matrix_size] + beta * data[i + j * matrix_size]);
+            EXPECT_EQ(rc_matrix_out.mData[i + j * matrix_size], alpha * std::complex<double>(i + 1, 0) * data[i + j * matrix_size] + beta * data[i + j * matrix_size]);
         }
     }
 }
@@ -152,11 +152,17 @@ TEST_F(
         CPX>
         rc_procedure;
 
+    std::string stop_condition = "RESIDUAL_ONLY";
+
+    (rc_procedure).setStopCondition(stop_condition);
+    (rc_procedure).setEigDiagnosticsFlag(true);
+    (rc_procedure).setVerboseFlag(true);
+
     int eig_count = 2;
     double subspace_tol = 1e-6;
     int subspace_size = 2;
     int buffer_size = 2;
-    RCvector<CPX> vTmp;
+    RCvector<CPX> vTmp(matrix_size);
     std::vector<double> eig_values;
 
     rc_procedure.getMinEigenSystem(
@@ -170,5 +176,10 @@ TEST_F(
                     eig_values,
                     eig_vectors);
 
-    EXPECT_TRUE(true);
+    for(int i = 0; i < eig_count; i++)
+    {
+        // NOTE: Tol is for residual and not for eig value
+        ASSERT_NEAR(eig_values[i], (i+1), subspace_tol);
+    }
+
 }

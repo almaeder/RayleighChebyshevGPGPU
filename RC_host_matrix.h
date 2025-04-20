@@ -38,6 +38,8 @@ public:
 
 	void device_to_host_copy();
 
+	void device_to_device_copy(const RC_host_matrix<T>& W);
+
 	void initialize(const RC_host_matrix<T> &W) override;
 
 	void initialize(const RCvector<T> &V, RC_INT n);
@@ -70,6 +72,16 @@ public:
 	void resize_rows(RC_INT n, RCvector<T> &V);
 
 	void resize(RC_INT m, RC_INT n);
+
+	void matmult(const RC_host_matrix<T>& A, const RC_host_matrix<T>& B, T alpha, T beta);
+
+	void matmult(const RC_host_matrix<T>& A, const RC_host_matrix<T>& B, T alpha, T beta, std::string conj_A, std::string conj_B);
+
+	void residuals(const RC_host_matrix<T> &OpA, const std::vector<double> &eig_values, std::vector<double> &eig_residuals, RC_INT residualCheckCount);
+
+	void substract(const RC_host_matrix<T> &A);
+
+	void scale(const T alpha);
 
 	std::vector<T> mData;
 };
