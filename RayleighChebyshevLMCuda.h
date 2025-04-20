@@ -211,51 +211,6 @@ public:
 
     ~RayleighChebyshevLMCuda()
     {
-        if (geqrf_work_d != NULL)
-        {
-            cudaFree(geqrf_work_d);
-        }
-        if (gqr_work_d != NULL)
-        {
-            cudaFree(gqr_work_d);
-        }
-        if (tau_d != NULL)
-        {
-            cudaFree(tau_d);
-        }
-        if (info_d != NULL)
-        {
-            cudaFree(info_d);
-        }
-
-        if (cusolverDn_handle != NULL)
-        {
-            cusolverErrchk(cusolverDnDestroy(cusolverDn_handle));
-        }
-        if (cublas_handle != NULL)
-        {
-            cublasErrchk(cublasDestroy(cublas_handle));
-        }
-
-        if (VtAVeigValue_d != NULL)
-        {
-            cudaFree(VtAVeigValue_d);
-        }
-        if (eigVresiduals_d != NULL)
-        {
-            cudaFree(eigVresiduals_d);
-        }
-        if (VtAVeigValue_h != NULL)
-        {
-            delete[] VtAVeigValue_h;
-        }
-        if (eigVresiduals_h != NULL)
-        {
-            delete[] eigVresiduals_h;
-        }
-        res_residualCheckCount = -1;
-        gqr_lwork = -1;
-        geqrf_lwork = -1;
     }
 
     void initialize()
@@ -853,17 +808,6 @@ protected:
                                         Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                                         Atype &eigVectors)
     {
-        res_residualCheckCount = -1;
-        gqr_lwork = -1;
-        geqrf_lwork = -1;
-        if (cusolverDn_handle == NULL)
-        {
-            cusolverErrchk(cusolverDnCreate(&cusolverDn_handle));
-        }
-        if (cublas_handle == NULL)
-        {
-            cublasErrchk(cublasCreate(&cublas_handle));
-        }
 
         OpPtr = &oP; // Pointer to input operator for use by supporting member functions
 
@@ -2152,24 +2096,6 @@ protected:
     std::vector<Vtype> MtVarray;
 #endif
 
-    cusolverDnHandle_t cusolverDn_handle = NULL;
-    int geqrf_lwork;
-    Dtype *geqrf_work_d = NULL;
-    int geqrf_m, geqrf_n;
-    Dtype *tau_d = NULL;
-    int tau_n;
-
-    int gqr_lwork;
-    Dtype *gqr_work_d = NULL;
-    int *info_d = NULL;
-
-    cublasHandle_t cublas_handle = NULL;
-
-    int res_residualCheckCount;
-    double *eigVresiduals_d = NULL;
-    double *VtAVeigValue_d = NULL;
-    double *eigVresiduals_h = NULL;
-    double *VtAVeigValue_h = NULL;
 };
 
 #undef DEFAULT_MAX_INNER_LOOP_COUNT

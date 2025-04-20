@@ -101,16 +101,16 @@ public:
 	std::vector<T> mData;
 	T *mData_d = NULL;
 	cusparseDnMatDescr_t matrix_desc = NULL;
-	RC_INT _old_residualCheckCount = 0;
+	RC_INT _old_residualCheckCount = -1;
 	double *_eig_residuals_d = NULL;
 	double *_eig_values_d = NULL;
 
-    int geqrf_lwork = 0;
+    int geqrf_lwork = -1;
     T *geqrf_work_d = NULL;
     int geqrf_m, geqrf_n;
     T *tau_d = NULL;
-    int tau_n = 0;
-    int gqr_lwork = 0;
+    int tau_n = -1;
+    int gqr_lwork = -1;
     T *gqr_work_d = NULL;
     int *info_d = NULL;
 
