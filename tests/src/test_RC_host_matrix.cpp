@@ -83,6 +83,43 @@ TEST_F(
 
 TEST_F(
     matrix,
+    elementwise_reading
+){
+
+    RC_host_matrix<CPX> rc_matrix(matrix_size, number_of_vectors, data);
+
+    for (int i = 0; i < matrix_size; i++) {
+        for (int j = 0; j < number_of_vectors; j++) {
+            EXPECT_EQ(rc_matrix(i, j), data[i + j * matrix_size]);
+        }
+    }
+
+}
+
+TEST_F(
+    matrix,
+    elementwise_writing
+){
+
+    RC_host_matrix<CPX> rc_matrix(matrix_size, number_of_vectors, data);
+
+    for (int i = 0; i < matrix_size; i++) {
+        for (int j = 0; j < number_of_vectors; j++) {
+            rc_matrix(i, j) = CPX(0.0, 0.0);
+        }
+    }
+    for (int i = 0; i < matrix_size; i++) {
+        for (int j = 0; j < number_of_vectors; j++) {
+            EXPECT_EQ(rc_matrix(i, j), CPX(0.0, 0.0));
+        }
+    }
+
+}
+
+
+
+TEST_F(
+    matrix,
     inner_product
 ){
 

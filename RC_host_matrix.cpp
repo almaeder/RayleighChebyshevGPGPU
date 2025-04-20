@@ -148,10 +148,10 @@ void RC_host_matrix<T>::normalize()
 template <typename T>
 T RC_host_matrix<T>::inner_product(const RC_INT k, const RC_INT l) const
 {
-    return _inner_product(this, k, l);
+    return _innerprod(this, k, l);
 }
 
-CPX _inner_product(const RC_host_matrix<CPX>* matrix, const RC_INT k, const RC_INT l)
+CPX _innerprod(const RC_host_matrix<CPX>* matrix, const RC_INT k, const RC_INT l)
 {
 
     RC_INT m = matrix->get_row_size();
@@ -177,7 +177,7 @@ CPX _inner_product(const RC_host_matrix<CPX>* matrix, const RC_INT k, const RC_I
 
 }
 
-double _inner_product(const RC_host_matrix<double>* matrix, const RC_INT k, const RC_INT l)
+double _innerprod(const RC_host_matrix<double>* matrix, const RC_INT k, const RC_INT l)
 {
 
     RC_INT m = matrix->get_row_size();
@@ -283,3 +283,56 @@ void RC_host_matrix<T>::resize(RC_INT m, RC_INT n)
 
 template class RC_host_matrix<double>;
 template class RC_host_matrix<CPX>;
+
+template<typename T>
+RC_host_randomize<T>::RC_host_randomize(){
+    seed = 3141592;
+    randomGenerator.seed(seed);
+
+    // Initialize the distribution to be uniform in the interval [-1,1]
+    std::uniform_real_distribution<double>::param_type distParams(-1.0,1.0);
+    distribution.param(distParams);
+}
+
+template<typename T>
+void RC_host_randomize<T>::randomize(RCvector<T>& V){
+    for(size_t i = 0; i < V.get_size(); i++)
+    {
+        if constexpr (std::is_same<T, double>::value)
+        {
+            V.vData[i] = distribution(randomGenerator);
+        }
+        else if constexpr (std::is_same<T, std::complex<double>>::value)
+        {
+            std::complex<double> random_complex(distribution(randomGenerator), distribution(randomGenerator));
+            V.vData[i] = random_complex;
+        }
+        else
+        {
+            throw std::runtime_error("Error: randomize not defined for this type");
+        }
+    }
+}
+
+template<typename T>
+void RC_host_randomize<T>::randomize(RC_host_matrix<T>& M){
+    for(size_t i = 0; i < M.get_size(); i++)
+    {
+        if constexpr (std::is_same<T, double>::value)
+        {
+            M.mData[i] = distribution(randomGenerator);
+        }
+        else if constexpr (std::is_same<T, std::complex<double>>::value)
+        {
+            std::complex<double> random_complex(distribution(randomGenerator), distribution(randomGenerator));
+            M.mData[i] = random_complex;
+        }
+        else
+        {
+            throw std::runtime_error("Error: randomize not defined for this type");
+        }
+    }
+}
+
+template class RC_host_randomize<double>;
+template class RC_host_randomize<CPX>;

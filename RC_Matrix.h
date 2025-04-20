@@ -103,7 +103,7 @@ class RCmatrix
 		}
 	}
 
-	void host_to_device(){
+	void host_to_device_copy(){
 		if (mData_d != NULL){
 			cudaMemcpy(mData_d, mData.data(), m*n*sizeof(T), cudaMemcpyHostToDevice);
 		}
@@ -113,7 +113,7 @@ class RCmatrix
 		}
 	}
 
-	void device_to_host(){
+	void device_to_host_copy(){
 		if (mData_d != NULL){
 			cudaMemcpy(mData.data(), mData_d, m*n*sizeof(T), cudaMemcpyDeviceToHost);
 		}

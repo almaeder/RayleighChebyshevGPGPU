@@ -541,7 +541,7 @@ public:
     void computeVtVeigensystem(Atype &VtAV, std::vector<double> &VtAVeigValue,
                                Atype &VtAVeigVector)
     {
-        VtAV.device_to_host();
+        VtAV.device_to_host_copy();
 
         RC_INT rowSize = VtAV.get_row_size();
 
@@ -593,7 +593,7 @@ public:
 
 
 
-        VtAVeigVector.host_to_device();
+        VtAVeigVector.host_to_device_copy();
     }
 
     void getMinEigAndMaxEig(double iterationTol, Vtype &vStart, Otype &oP,
@@ -1044,9 +1044,9 @@ protected:
         {
             RC_INT maxOrthoCheck = 10;
             RC_INT orthoCheckCount = 1;
-            mArray.host_to_device();
+            mArray.host_to_device_copy();
             orthogonalize(mArray);
-            mArray.device_to_host();
+            mArray.device_to_host_copy();
 
             // Due to instability of modified Gram-Schmidt for creating an
             // orthonormal basis for a high dimensional vector space, multiple
@@ -1055,9 +1055,9 @@ protected:
             while ((OrthogonalityCheck(mArray, false) > 1.0e-12) && (orthoCheckCount <= maxOrthoCheck))
             {
                 orthoCheckCount += 1;
-                mArray.host_to_device();
+                mArray.host_to_device_copy();
                 orthogonalize(mArray);
-                mArray.device_to_host();
+                mArray.device_to_host_copy();
             }
 
             if (orthoCheckCount > maxOrthoCheck)
@@ -1067,14 +1067,14 @@ protected:
                 errMsg += "\nReduce size of buffer and/or subspaceIncrement \n";
                 throw std::runtime_error(errMsg);
             }
-            mArray.host_to_device();
+            mArray.host_to_device_copy();
             formVtAV(mArray);
 
             computeVtVeigensystem(VtAV, VtAVeigValue, VtAVeigVector);
 
             createEigenVectorsAndResiduals(VtAVeigVector, mArray, subspaceSize, eigVecResiduals);
 
-            mArray.host_to_device();
+            mArray.host_to_device_copy();
             eigVectors = mArray;
             eigValues = VtAVeigValue;
             return subspaceSize;
@@ -1143,7 +1143,7 @@ protected:
             //
 
 
-            mArray.host_to_device();
+            mArray.host_to_device_copy();
             // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
             // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
             // std::cout << std::endl;
@@ -1258,7 +1258,7 @@ protected:
 
                 startTimer();
 
-                // mArray.host_to_device();
+                // mArray.host_to_device_copy();
                 // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
                 // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
                 // std::cout << std::endl;
@@ -1297,7 +1297,7 @@ protected:
                 //
                 startTimer();
     
-                // mArray.device_to_host();
+                // mArray.device_to_host_copy();
                 // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
                 // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
 
@@ -1339,7 +1339,7 @@ protected:
 
                 createEigenVectorsAndResiduals(VtAVeigVector, mArray, residualCheckCount, subspaceResiduals);
 
-                // mArray.device_to_host();
+                // mArray.device_to_host_copy();
                 // std::cout << mArray(0, 0) << " " << mArray(0, 1) << std::endl;
                 // std::cout << mArray(1, 0) << " " << mArray(1, 1) << std::endl;
                 // std::cout << std::endl;
@@ -1636,7 +1636,7 @@ protected:
 
             if (foundCount > 0)
             {
-                mArray.device_to_host();
+                mArray.device_to_host_copy();
                 eigVectors.resize(foundSize + foundCount, vStart);
                 eigValues.resize(foundSize + foundCount, 0.0);
 
@@ -1799,7 +1799,7 @@ protected:
 
         if (nonMonotoneFlag)
         {
-            eigVectors.host_to_device();
+            eigVectors.host_to_device_copy();
             foundSize = eigVectors.get_col_size();
             mArrayTmp.resize(foundSize, vStart);
 
@@ -1832,7 +1832,7 @@ protected:
             incrementCount("OpApply", foundSize);
             incrementTime("eigenvalue");
             incrementCount("eigenvalue");
-            eigVectors.device_to_host();
+            eigVectors.device_to_host_copy();
 
         } // End non-monotone eigensystem correction
 

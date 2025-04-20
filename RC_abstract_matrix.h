@@ -46,9 +46,11 @@ class RC_abstract_matrix
 
 	virtual void orthogonalize() = 0;
 
-
     virtual Derived& operator=(const Derived& W) = 0;
 
+    virtual inline T& operator()(RC_INT i, RC_INT j) = 0;
+
+    virtual const inline T& operator()(RC_INT i, RC_INT j) const = 0;
 
 	virtual void normalize() = 0;
 
@@ -78,29 +80,6 @@ class RC_abstract_matrix
     return n;
     }
 
-    // inline T& operator()(RC_INT i, RC_INT j)
-    // {
-    // return mData[i  + j*m];
-    // };
-
-    // const inline T& operator()(RC_INT i, RC_INT j) const
-    // {
-    // return mData[i + j*m];
-    // };
-
-    // T* getDataPointer(){return mData.data();};
-
-    // const T* getDataPointer() const {return mData.data();};
-
-    // T* getDataPointer_d(){return mData_d;};
-
-    // const T* getDataPointer_d() const {return mData_d;};
-
-
-	// std::vector<T> mData;
-	// T *mData_d = NULL;
-	// cusparseDnMatDescr_t matrix_desc = NULL;
-
 	protected:
 		RC_INT n;
 		RC_INT m;
@@ -111,6 +90,24 @@ class RC_abstract_matrix
 
 };
 
+#endif /* RC_ABSTRACT_MATRIX_ */
 
 
-#endif /* AmatrixClassLMCuda_ */
+#ifndef RC_ABSTRACT_RANDOMIZE_
+#define RC_ABSTRACT_RANDOMIZE_
+
+template <typename T, typename Matrix>
+class RC_abstract_randomize
+{
+    public:
+
+	RC_abstract_randomize() {}
+
+	virtual void randomize(RCvector<T>& V) = 0;
+
+	virtual void randomize(Matrix& M) = 0;
+
+};
+
+#endif /* RC_abstract_randomize */
+
