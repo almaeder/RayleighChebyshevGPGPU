@@ -57,6 +57,20 @@ void scale(
 
 }
 
+void scale(
+    std::complex<double> *data_d,
+    const int n,
+    const std::complex<double> scale
+){
+    int blocks = (n + THREADS - 1) / THREADS;
+
+    cuDoubleComplex scale_T = make_cuDoubleComplex(scale.real(), scale.imag());
+    _scale<<<blocks, THREADS>>>(reinterpret_cast<cuDoubleComplex*>(data_d), n,
+        scale_T);
+
+}
+
+
 template <typename T>
 __global__ void _substract(
     T *a_d,

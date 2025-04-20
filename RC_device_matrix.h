@@ -2,6 +2,11 @@
 #pragma once
 #include "RC_Vector.h"
 #include "RC_host_matrix.h"
+#include "cudaErrchk.h"
+#include "cuda_kernels.h"
+
+#include <cusolverDn.h>
+#include <cublas_v2.h>
 
 #ifndef RC_DEVICE_MATRIX_
 #define RC_DEVICE_MATRIX_
@@ -9,6 +14,9 @@
 template <typename T>
 class RC_device_matrix : public RC_host_matrix<T>
 {
+protected:
+    using Base = RC_host_matrix<T>;
+
 public:
 	//////////////////////////////////////////////////////////
 	//  Required constructors
@@ -81,9 +89,34 @@ public:
 
 	void substract(const RC_device_matrix<T> &A);
 
-	void scale(const T alpha);
+	template <typename T1>
+	void scale(const T1 alpha);
+
+	void _create_cuda_handles();
+	void _create_cuda_memory();
+	void _create_cuda_memory(const RC_device_matrix<T>& W);
+	void _create_cuda_descriptor();
+	void _allocate_qr_memory();
 
 	std::vector<T> mData;
+	T *mData_d = NULL;
+	cusparseDnMatDescr_t matrix_desc = NULL;
+	RC_INT _old_residualCheckCount = 0;
+	double *_eig_residuals_d = NULL;
+	double *_eig_values_d = NULL;
+
+    int geqrf_lwork = 0;
+    T *geqrf_work_d = NULL;
+    int geqrf_m, geqrf_n;
+    T *tau_d = NULL;
+    int tau_n = 0;
+    int gqr_lwork = 0;
+    T *gqr_work_d = NULL;
+    int *info_d = NULL;
+
+	cublasHandle_t cublas_handle = NULL;
+	cusolverDnHandle_t cusolverDn_handle = NULL;
+
 };
 
 #endif /* RC_DEVICE_MATRIX_ */
@@ -94,16 +127,7 @@ public:
 template <typename T>
 class RC_device_randomize : public RC_host_randomize<T>
 {
-public:
-	RC_device_randomize();
 
-	void randomize(RCvector<T> &V);
-
-	void randomize(RC_device_matrix<T> &M);
-
-	int seed;
-	std::mt19937_64 randomGenerator;
-	std::uniform_real_distribution<double> distribution;
 };
 
 #endif /* RC_DEVICE_RANDOMIZE_ */

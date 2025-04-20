@@ -20,6 +20,13 @@ void scale(
     const double scale
 );
 
+void scale(
+    std::complex<double> *data_d,
+    const int n,
+    const std::complex<double> scale
+);
+
+
 template <typename T>
 void substract(
     T *a_d,

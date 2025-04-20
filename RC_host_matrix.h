@@ -83,6 +83,10 @@ public:
 
 	void scale(const T alpha);
 
+	void _create_cuda_memory();
+	void _create_cuda_memory(const RC_host_matrix<T>& W);
+	void _create_cuda_descriptor();
+
 	std::vector<T> mData;
 };
 
