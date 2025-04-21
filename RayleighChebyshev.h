@@ -1,5 +1,5 @@
 /**
-                         RayleighChebyshevLMCuda.h
+                         RayleighChebyshev.h
 
 
    A templated class with member functions for computing eigenpairs
@@ -97,11 +97,11 @@
     ###########################################################################
 
     !!!! Important restriction on the std::vector classes and operator classes
-    used by the RayleighChebyshevLMCuda template.
+    used by the RayleighChebyshev template.
 
     ###########################################################################
 
-    When specifying a std::vector class to be used with a RayleighChebyshevLMCuda instance, it is critical
+    When specifying a std::vector class to be used with a RayleighChebyshev instance, it is critical
     that the copy constructor handle null instances correctly (e.g. instances that were created
     with the null constructor).
 
@@ -172,7 +172,7 @@
 #include "RC_Types.h"
 
 #include "LanczosCpoly.h"               // Chebyshev polynomial based filter polynomial
-#include "LanczosCpolyOperatorLMCuda.h" // Chebyshev polynomial based filter polynomial operator
+#include "LanczosCpolyOperator.h" // Chebyshev polynomial based filter polynomial operator
 #include "LanczosMaxMinFinder.h"
 
 #include <cusolverDn.h>
@@ -201,15 +201,15 @@
 #endif
 
 template <class Atype, class Vtype, class Otype, class VRandomizeOpType, typename Dtype>
-class RayleighChebyshevLMCuda
+class RayleighChebyshev
 {
 public:
-    RayleighChebyshevLMCuda()
+    RayleighChebyshev()
     {
         initialize();
     }
 
-    ~RayleighChebyshevLMCuda()
+    ~RayleighChebyshev()
     {
     }
 
@@ -805,7 +805,7 @@ protected:
     {
 
         if (eigVectors.get_row_size() <= 0){
-            throw std::runtime_error("RayleighChebyshevLMCuda Error: eigVectors.get_row_size() <= 0");
+            throw std::runtime_error("RayleighChebyshev Error: eigVectors.get_row_size() <= 0");
         }
 
         OpPtr = &oP; // Pointer to input operator for use by supporting member functions
@@ -868,7 +868,7 @@ protected:
 
         if (subspaceSize <= 0)
         {
-            throw std::runtime_error("RayleighChebyshevLMCuda Error: subspaceSize <= 0");
+            throw std::runtime_error("RayleighChebyshev Error: subspaceSize <= 0");
         }
 
         //
@@ -880,7 +880,7 @@ protected:
         if (subspaceSize > vectorDimension)
         {
             // assert false
-            throw std::runtime_error("RayleighChebyshevLMCuda Error: subspaceSize > vectorDimension");
+            throw std::runtime_error("RayleighChebyshev Error: subspaceSize > vectorDimension");
 
             if (subspaceIncrementSize < vectorDimension)
             {
@@ -997,7 +997,7 @@ protected:
 
             if (orthoCheckCount > maxOrthoCheck)
             {
-                std::string errMsg = "\nXXXX RayleighChebyshevLMCuda Error XXXX";
+                std::string errMsg = "\nXXXX RayleighChebyshev Error XXXX";
                 errMsg += "\nUnable to create basis for complete vector space.\n";
                 errMsg += "\nReduce size of buffer and/or subspaceIncrement \n";
                 throw std::runtime_error(errMsg);
@@ -1437,7 +1437,7 @@ protected:
                                     oString.clear();
                                     snprintf(charBuf, 256, "Warning : Oscillatory residuals observed when max residual less than square root of subspace tolerance.\n");
                                     oString = charBuf;
-                                    snprintf(charBuf, 256, "          RayleighChebyshevLMCuda subspace iteration stopped before residual termination criterion met.\n");
+                                    snprintf(charBuf, 256, "          RayleighChebyshev subspace iteration stopped before residual termination criterion met.\n");
                                     oString += charBuf;
                                     snprintf(charBuf, 256, "          Subspace tolerance specified :  %10.5e \n", subspaceTol);
                                     oString += charBuf;
@@ -1793,7 +1793,7 @@ protected:
         if (eigDiagnosticsFlag == 1)
         {
             oString.clear();
-            snprintf(charBuf, 256, "\nXXXX RayleighChebyshevLMCuda Diagnostics XXXXX \n");
+            snprintf(charBuf, 256, "\nXXXX RayleighChebyshev Diagnostics XXXXX \n");
             oString = charBuf;
 
 #ifdef _OPENMP
@@ -2043,7 +2043,7 @@ protected:
     LanczosMaxMinFinder<Vtype, Otype, VRandomizeOpType> lanczosMaxMinFinder;
 
     LanczosCpoly cPoly;
-    LanczosCpolyOperatorLMCuda<Atype, Otype> cOp;
+    LanczosCpolyOperator<Atype, Otype> cOp;
 
     SCC::DSYEV dsyev;
 

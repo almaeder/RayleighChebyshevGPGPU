@@ -1,5 +1,5 @@
 //
-//              LanczosCpolyOperatorLMCuda.h
+//              LanczosCpolyOperator.h
 //
 //     LanczosCpolyOperator for Large Matrix problems
 //
@@ -22,7 +22,7 @@
 // done externally e.g. the application of the operator
 // to a block of vectors is carried out by multi-threading the
 // loop over each vector with each thread being associated with
-// a separate instance of a LanczosCpolyOperatorLMCuda.
+// a separate instance of a LanczosCpolyOperator.
 //
 // Chris Anderson 2022
 //
@@ -110,17 +110,17 @@
 #define LANCZOS_C_POLY_OPERATOR_LM_
 
 template <class Amatrix, class Otype>
-class LanczosCpolyOperatorLMCuda
+class LanczosCpolyOperator
 {
 public:
 
-LanczosCpolyOperatorLMCuda()
+LanczosCpolyOperator()
 {
       lanczosCpoly.initialize();
       Op                  = 0;
 };
 
-LanczosCpolyOperatorLMCuda(RC_INT polyDegree, RC_INT repetitionFactor,
+LanczosCpolyOperator(RC_INT polyDegree, RC_INT repetitionFactor,
 double  lambdaMax,  double shift, Otype& Op)
 {
     lanczosCpoly.initialize(polyDegree, repetitionFactor, lambdaMax, shift);
@@ -145,7 +145,7 @@ double  lambdaMax, double shift)
 {
 	if(this->Op == nullptr)
 	{
-		std::string errMsg = "\n     LanczosCpolyOperatorLMCuda : setting Lanczos C poly parameters before \n";
+		std::string errMsg = "\n     LanczosCpolyOperator : setting Lanczos C poly parameters before \n";
 	                errMsg += "\n    associating an operator with the instance. \n";
 		throw std::runtime_error(errMsg);
 	}
@@ -161,7 +161,7 @@ double  lambdaMax, double shift, Otype& Op)
     this->Op                  = &Op;
 }
 
-~LanczosCpolyOperatorLMCuda(void)
+~LanczosCpolyOperator(void)
 {};
 
 void setShift(double shift)

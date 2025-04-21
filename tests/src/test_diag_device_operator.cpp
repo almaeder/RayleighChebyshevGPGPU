@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "diag_device_operator.h"
-#include "../../RayleighChebyshevLMCuda.h"
+#include "../../RayleighChebyshev.h"
 
 class device_matrix : public ::testing::Test
 {
@@ -181,7 +181,7 @@ TEST_F(
 
     RC_device_randomize<CPX> rc_randomize;
 
-    RayleighChebyshevLMCuda<
+    RayleighChebyshev<
         RC_device_matrix<CPX>,
         RCvector<CPX>,
         diag_device_operator<CPX, RC_device_matrix<CPX>>,
@@ -209,7 +209,7 @@ TEST_F(
     RC_device_matrix<CPX> eig_vectors;
 
 
-    RayleighChebyshevLMCuda<
+    RayleighChebyshev<
         RC_device_matrix<CPX>,
         RCvector<CPX>,
         diag_device_operator<CPX, RC_device_matrix<CPX>>,

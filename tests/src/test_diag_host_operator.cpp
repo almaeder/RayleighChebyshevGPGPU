@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "diag_host_operator.h"
-#include "../../RayleighChebyshevLMCuda.h"
+#include "../../RayleighChebyshev.h"
 
 class host_matrix : public ::testing::Test
 {
@@ -115,7 +115,7 @@ TEST_F(
 
     RC_host_randomize<CPX> rc_randomize;
 
-    RayleighChebyshevLMCuda<
+    RayleighChebyshev<
         RC_host_matrix<CPX>,
         RCvector<CPX>,
         diag_host_operator<CPX, RC_host_matrix<CPX>>,
@@ -144,7 +144,7 @@ TEST_F(
     RC_host_matrix<CPX> eig_vectors;
 
 
-    RayleighChebyshevLMCuda<
+    RayleighChebyshev<
         RC_host_matrix<CPX>,
         RCvector<CPX>,
         diag_host_operator<CPX, RC_host_matrix<CPX>>,
