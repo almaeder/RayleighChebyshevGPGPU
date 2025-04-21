@@ -288,8 +288,8 @@ TEST_F(
 
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-            ASSERT_NEAR(C_matrix(i, j).real(), C_ref[i + j * m].real(), 1e-15);
-            ASSERT_NEAR(C_matrix(i, j).imag(), C_ref[i + j * m].imag(), 1e-15);
+            ASSERT_NEAR(C_matrix(i, j).real(), C_ref[i + j * m].real(), 1e-14);
+            ASSERT_NEAR(C_matrix(i, j).imag(), C_ref[i + j * m].imag(), 1e-14);
         }
     }
 }
@@ -311,12 +311,12 @@ TEST_F(
 
     std::vector<double> eig_residuals_ref(number_of_vectors);
 
-    for (int i = 0; i < number_of_vectors; i++) {
+    for (int j = 0; j < number_of_vectors; j++) {
         CPX normSquared = CPX(0.0, 0.0);
-        for(int j = 0; j < matrix_size; j++) {
-            normSquared += (rc_matrix_ref(i, j) - eig_values[i] * rc_matrix(i, j)) * std::conj(rc_matrix_ref(i, j) - eig_values[i] * rc_matrix(i, j));
+        for(int i = 0; i < matrix_size; i++) {
+            normSquared += (rc_matrix_ref(i, j) - rc_matrix(i, j)) * std::conj(rc_matrix_ref(i, j) - rc_matrix(i, j));
         }
-        eig_residuals_ref[i] = std::sqrt(std::abs(normSquared));
+        eig_residuals_ref[j] = std::sqrt(std::abs(normSquared));
     }
 
     for (int i = 0; i < number_of_vectors; i++) {

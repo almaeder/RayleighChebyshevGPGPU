@@ -442,15 +442,24 @@ void RC_host_matrix<T>::residuals(const RC_host_matrix<T> &OpA, const std::vecto
         throw std::runtime_error("Error: matrix sizes do not match");
     }
 
+    std::cout << residualCheckCount  << " " << this->m << " " << this->n << std::endl;
+
     for (int i = 0; i < residualCheckCount; i++)
     {
-        T normSquared = T(0.0);
+        T normSquared;
+        if constexpr (std::is_same<T, std::complex<double>>::value)
+            normSquared = std::complex<double>(0.0, 0.0);
+        else if constexpr (std::is_same<T, double>::value)
+            normSquared = double(0.0);
+        else
+            throw std::runtime_error("Error: innerprod_complex not defined for this type");
+
         for (size_t j = 0; j < this->m; j++)
         {
             if constexpr (std::is_same<T, std::complex<double>>::value)
-                normSquared += (OpA(i, j) - eig_values[i] * operator()(i, j)) * std::conj(OpA(i, j) - eig_values[i] * operator()(i, j));
+                normSquared += (OpA(j, i) - eig_values[i] * this->operator()(j, i)) * std::conj( (OpA(j, i) - eig_values[i] * this->operator()(j, i)) );
             else if constexpr (std::is_same<T, double>::value)
-                normSquared += (OpA(i, j) - eig_values[i] * operator()(i, j)) * (OpA(i, j) - eig_values[i] * operator()(i, j));
+                normSquared += (OpA(j, i) - eig_values[i] * this->operator()(j, i)) * (OpA(j, i) - eig_values[i] * this->operator()(j, i));
             else
                 throw std::runtime_error("Error: innerprod_complex not defined for this type");
         }

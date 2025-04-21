@@ -234,7 +234,6 @@ void apply(Amatrix& mArray)
             (*vnm2ArrayPtr).device_to_device_copy((*vnm1ArrayPtr));
         }
 
-        std::cout << "repCount = " << repCount << std::endl;
         Op->apply(*vnm2ArrayPtr, *vnm1ArrayPtr, gamma2*gamma1, gamma2);
 
         // 

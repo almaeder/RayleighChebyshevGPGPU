@@ -165,6 +165,8 @@ TEST_F(
     RCvector<CPX> vTmp(matrix_size);
     std::vector<double> eig_values;
 
+    eig_vectors.resize(matrix_size, subspace_size + buffer_size);
+
     rc_procedure.getMinEigenSystem(
                     eig_count,
                     subspace_tol,

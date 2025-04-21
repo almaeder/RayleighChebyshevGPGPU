@@ -244,9 +244,6 @@ public:
         timeValue.clear();
 #endif
 
-#ifdef _OPENMP
-        MtVarray.clear();
-#endif
     }
 
     // This routine determines the factor used for estimating
@@ -658,8 +655,6 @@ public:
     // increase the gap between the desired states and other states in
     // order to improve performance.
     //
-    // vStart : A std::vector instance used as a template for for the
-    //          the construction of all eigenvectors computed.
     //
     //    oP  : The linear operator whose eigenpairs are sought
     //
@@ -696,7 +691,7 @@ public:
 
         return getMinIntervalEigenSystem_Base(minEigValueEst, lambdaMax, maxEigValueBound,
                                               subspaceTol, subspaceIncrementSize, bufferSize, maxEigensystemDim,
-                                              vStart, oP, randOp, eigValues, eigVectors);
+                                              oP, randOp, eigValues, eigVectors);
     }
     //
     //  Computes the lowest eigCount eigenvalues and eigenvectors
@@ -769,7 +764,7 @@ public:
 
         return getMinIntervalEigenSystem_Base(minEigValue, lambdaMax, maxEigValue,
                                               subspaceTol, subspaceIncrementSize, bufferSize, maxEigensystemDim,
-                                              vStart, oP, randOp, eigValues, eigVectors);
+                                              oP, randOp, eigValues, eigVectors);
     }
 
     //
@@ -785,14 +780,14 @@ public:
 
     RC_INT getMinIntervalEigenSystem(double minEigValueEst, double lambdaMax, double maxEigValueBound,
                                    double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim,
-                                   Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
+                                   Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                                    Atype &eigVectors)
     {
         this->setIntervalStopCondition();
 
         return getMinIntervalEigenSystem_Base(minEigValueEst, lambdaMax, maxEigValueBound,
                                               subspaceTol, subspaceIncrementSize, bufferSize, maxEigensystemDim,
-                                              vStart, oP, randOp, eigValues, eigVectors);
+                                              oP, randOp, eigValues, eigVectors);
     }
 
     //
@@ -805,9 +800,13 @@ public:
 protected:
     RC_INT getMinIntervalEigenSystem_Base(double minEigValue, double lambdaMax, double maxEigValue,
                                         double subspaceTol, RC_INT subspaceIncrementSize, RC_INT bufferSize, RC_INT maxEigensystemDim,
-                                        Vtype &vStart, Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
+                                        Otype &oP, VRandomizeOpType &randOp, std::vector<double> &eigValues,
                                         Atype &eigVectors)
     {
+
+        if (eigVectors.get_row_size() <= 0){
+            throw std::runtime_error("RayleighChebyshevLMCuda Error: eigVectors.get_row_size() <= 0");
+        }
 
         OpPtr = &oP; // Pointer to input operator for use by supporting member functions
 
@@ -844,7 +843,7 @@ protected:
 
         if (not nonRandomStartFlag)
         {
-            eigVectors.resize((RC_INT)(vStart.get_size()), (RC_INT)0);
+            eigVectors.resize((RC_INT)(eigVectors.get_row_size()), (RC_INT)0);
         }
 
         RC_INT returnFlag = 0;
@@ -867,14 +866,22 @@ protected:
         subspaceSize = subspaceIncrementSize + bufferSize;
         foundSize = 0;
 
+        if (subspaceSize <= 0)
+        {
+            throw std::runtime_error("RayleighChebyshevLMCuda Error: subspaceSize <= 0");
+        }
+
         //
         // Reset sizes if subspaceSize is larger
         // than dimension of system
 
-        RC_INT vectorDimension = vStart.get_size();
+        RC_INT vectorDimension = eigVectors.get_row_size();
 
         if (subspaceSize > vectorDimension)
         {
+            // assert false
+            throw std::runtime_error("RayleighChebyshevLMCuda Error: subspaceSize > vectorDimension");
+
             if (subspaceIncrementSize < vectorDimension)
             {
                 bufferSize = vectorDimension - subspaceIncrementSize;
@@ -904,14 +911,13 @@ protected:
         // been found
         //
 
-        mArray.resize(vStart.get_size(), subspaceSize);
-        mArrayTmp.resize(vStart.get_size(), subspaceSize);
+        mArray.resize(eigVectors.get_row_size(), subspaceSize);
+        mArrayTmp.resize(eigVectors.get_row_size(), subspaceSize);
 
         VtAVeigValue.resize(subspaceSize, 0.0);
 
         VtAV.resize(subspaceSize, subspaceSize);
         VtAVeigVector.resize(subspaceSize, subspaceSize);
-        tau.resize(subspaceSize, 0.0);
 
         RC_INT starDegree = 0;
         RC_INT starDegreeSave = 0;
@@ -943,7 +949,7 @@ protected:
         if (not nonRandomStartFlag)
         {
             randOp.randomize(mArray);
-            mArrayTmp.initialize(vStart, subspaceSize);
+            mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
         }
         else
         {
@@ -959,28 +965,14 @@ protected:
                     }
                 }
 
-                mArrayTmp.initialize(vStart, subspaceSize);
+                mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
             }
             else
             {
                 mArray.initialize(eigVectors);
-                mArrayTmp.initialize(vStart, subspaceSize);
+                mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
             }
         }
-
-        // Initialize temporaries
-
-        vTemp.initialize(vStart);
-
-#ifdef _OPENMP
-        MtVarray.clear();
-        MtVarray.resize(threadCount);
-
-        for (RC_INT k = 0; k < threadCount; k++)
-        {
-            MtVarray[k].initialize(vStart);
-        }
-#endif
 
         // Quick return if subspaceSize >= vector dimension
 
@@ -1262,7 +1254,6 @@ protected:
                 }
 
                 subspaceResiduals.clear();
-
 
                 createEigenVectorsAndResiduals(VtAVeigVector, mArray, residualCheckCount, subspaceResiduals);
 
@@ -1557,7 +1548,7 @@ protected:
             if (foundCount > 0)
             {
                 mArray.device_to_host_copy();
-                eigVectors.resize_rows(foundSize + foundCount, vStart);
+                eigVectors.resize(eigVectors.get_row_size(), foundSize + foundCount);
                 eigValues.resize(foundSize + foundCount, 0.0);
 
 #pragma omp parallel for
@@ -1721,7 +1712,7 @@ protected:
         {
             eigVectors.host_to_device_copy();
             foundSize = eigVectors.get_col_size();
-            mArrayTmp.resize_rows(foundSize, vStart);
+            mArrayTmp.resize(eigVectors.get_row_size(), foundSize);
 
             VtAV.resize(foundSize, foundSize);
             VtAVeigVector.initialize(foundSize, foundSize);
@@ -2043,10 +2034,7 @@ protected:
     Atype mArray;
     Atype mArrayTmp;
 
-    Vtype vTemp;
-
     // For storage of matrices and eigenvectors of projected system
-    std::vector<Dtype> tau;
     Atype VtAV;
     Atype VtAVeigVector;
 
@@ -2088,12 +2076,6 @@ protected:
     ClockIt globalTimer;
     std::map<std::string, double> timeValue;
     std::map<std::string, RC_INT> timeCount;
-#endif
-
-    // Temporaries for multi-threading
-
-#ifdef _OPENMP
-    std::vector<Vtype> MtVarray;
 #endif
 
 };

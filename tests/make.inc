@@ -17,7 +17,7 @@ CUDA_LIBS := -L${CUDA_HOME}/lib64 -lcudart -lcusparse -lcublas -lcusolver
 
 LIBS += $(CUDA_LIBS)
 
-CXXFLAGS := -fopenmp -std=c++17 -O3 -funroll-loops 
+CXXFLAGS := -fopenmp -std=c++17 -O2 -funroll-loops 
 CXXFLAGS += -DUSE_MKL -DMKL_Complex16="std::complex<double>"
 CXXFLAGS += -lmkl_gf_lp64 -lmkl_sequential -lmkl_core
-CUDA_FLAGS := -std=c++17 --gpu-architecture=sm_60 -O3
+CUDA_FLAGS := -std=c++17 --gpu-architecture=sm_60 -O2
