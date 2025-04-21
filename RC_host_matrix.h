@@ -65,11 +65,11 @@ public:
 	void _scale(const RC_INT k, const T alpha);
 	void _scale_add(const RC_INT k, const RC_INT l, const T alpha);
 
-	void resize_rows(RC_INT n);
+	void resize_cols(RC_INT n);
 
-	void resize_rows(RC_INT n, T value);
+	void resize_cols(RC_INT n, T value);
 
-	void resize_rows(RC_INT n, RCvector<T> &V);
+	void resize_cols(RC_INT n, RCvector<T> &V);
 
 	void resize(RC_INT m, RC_INT n);
 

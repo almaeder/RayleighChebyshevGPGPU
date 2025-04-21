@@ -55,11 +55,11 @@ public:
 
 	T inner_product(const RC_INT k, const RC_INT l) const {};
 
-	virtual void resize_rows(RC_INT n) = 0;
+	virtual void resize_cols(RC_INT n) = 0;
 
-	virtual void resize_rows(RC_INT n, T value) = 0;
+	virtual void resize_cols(RC_INT n, T value) = 0;
 
-	virtual void resize_rows(RC_INT n, RCvector<T> &V) = 0;
+	virtual void resize_cols(RC_INT n, RCvector<T> &V) = 0;
 
 	virtual void resize(RC_INT m, RC_INT n) = 0;
 

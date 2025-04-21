@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "diag_operator.h"
+#include "diag_host_operator.h"
 #include "../../RayleighChebyshevLMCuda.h"
 
-class matrix : public ::testing::Test
+class host_matrix : public ::testing::Test
 {
 protected:
     // Common inputs
@@ -38,21 +38,21 @@ protected:
 };
 
 TEST_F(
-    matrix,
+    host_matrix,
     initialize_operator_empty)
 {
 
-    diag_operator<CPX, RC_host_matrix<CPX>> rc_operator;
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator;
 
     EXPECT_TRUE(true);
 }
 
 TEST_F(
-    matrix,
+    host_matrix,
     initialize_operator)
 {
 
-    diag_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
 
     for (int i = 0; i < matrix_size; i++)
     {
@@ -61,11 +61,11 @@ TEST_F(
 }
 
 TEST_F(
-    matrix,
+    host_matrix,
     apply_operator_matrix)
 {
 
-    diag_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
 
     RC_host_matrix<CPX> rc_matrix(matrix_size, number_of_vectors, data);
 
@@ -81,11 +81,11 @@ TEST_F(
 }
 
 TEST_F(
-    matrix,
+    host_matrix,
     apply_operator_matrix_alpha_beta)
 {
 
-    diag_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
 
     RC_host_matrix<CPX> rc_matrix_in(matrix_size, number_of_vectors, data);
     RC_host_matrix<CPX> rc_matrix_out(matrix_size, number_of_vectors, data);
@@ -105,11 +105,11 @@ TEST_F(
 }
 
 TEST_F(
-    matrix,
+    host_matrix,
     init_solver)
 {
 
-    diag_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
 
     RC_host_matrix<CPX> rc_matrix(matrix_size, number_of_vectors, data);
 
@@ -118,7 +118,7 @@ TEST_F(
     RayleighChebyshevLMCuda<
         RC_host_matrix<CPX>,
         RCvector<CPX>,
-        diag_operator<CPX, RC_host_matrix<CPX>>,
+        diag_host_operator<CPX, RC_host_matrix<CPX>>,
         RC_host_randomize<CPX>,
         CPX>
         rc_procedure;
@@ -133,11 +133,11 @@ TEST_F(
 }
 
 TEST_F(
-    matrix,
+    host_matrix,
     solve)
 {
 
-    diag_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
 
     RC_host_randomize<CPX> rc_randomize;
 
@@ -147,7 +147,7 @@ TEST_F(
     RayleighChebyshevLMCuda<
         RC_host_matrix<CPX>,
         RCvector<CPX>,
-        diag_operator<CPX, RC_host_matrix<CPX>>,
+        diag_host_operator<CPX, RC_host_matrix<CPX>>,
         RC_host_randomize<CPX>,
         CPX>
         rc_procedure;

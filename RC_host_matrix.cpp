@@ -243,14 +243,14 @@ void RC_host_matrix<T>::_scale_add(const RC_INT k, const RC_INT l, const T alpha
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize_rows(RC_INT n)
+void RC_host_matrix<T>::resize_cols(RC_INT n)
 {
     mData.resize(this->m * n);
     this->n = n;
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize_rows(RC_INT n, T value)
+void RC_host_matrix<T>::resize_cols(RC_INT n, T value)
 {
     if (n == this->n)
     {
@@ -267,7 +267,7 @@ void RC_host_matrix<T>::resize_rows(RC_INT n, T value)
 }
 
 template <typename T>
-void RC_host_matrix<T>::resize_rows(RC_INT n, RCvector<T> &V)
+void RC_host_matrix<T>::resize_cols(RC_INT n, RCvector<T> &V)
 {
     if (n == this->n)
     {
@@ -441,8 +441,6 @@ void RC_host_matrix<T>::residuals(const RC_host_matrix<T> &OpA, const std::vecto
     {
         throw std::runtime_error("Error: matrix sizes do not match");
     }
-
-    std::cout << residualCheckCount  << " " << this->m << " " << this->n << std::endl;
 
     for (int i = 0; i < residualCheckCount; i++)
     {

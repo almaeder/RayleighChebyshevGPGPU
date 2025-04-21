@@ -35,7 +35,7 @@ RC_device_matrix<T>::RC_device_matrix(RC_INT m, RC_INT n, std::vector<T> data)
 {
     resize(m, n);
     this->mData = data;
-    this->device_to_host_copy();
+    this->host_to_device_copy();
 }
 
 template <typename T>
@@ -117,13 +117,31 @@ void RC_device_matrix<T>::device_to_device_copy(const RC_device_matrix<T> &W)
 template <typename T>
 void RC_device_matrix<T>::initialize(const RC_device_matrix<T> &W)
 {
-    this->Base::initialize(W);
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2)
+#endif
+    for (size_t i = 0; i < W.n; i++)
+    {
+        for (size_t j = 0; j < W.m; j++)
+        {
+            mData[i * W.m + j] = W.mData[i * W.m + j];
+        }
+    }
 }
 
 template <typename T>
 void RC_device_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
 {
-    this->Base::initialize(V, n);
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2)
+#endif
+    for (size_t i = 0; i < n; i++)
+    {
+        for (size_t j = 0; j < this->m; j++)
+        {
+            mData[i * this->m + j] = V.vData[j];
+        }
+    }
 }
 
 template <typename T>
@@ -207,12 +225,53 @@ void RC_device_matrix<T>::normalize()
 template <typename T>
 T RC_device_matrix<T>::inner_product(const RC_INT k, const RC_INT l) const
 {
-    return this->Base::inner_product(k, l);
+    return _innerprod(this, k, l);
+}
+
+CPX _innerprod(const RC_device_matrix<CPX> *matrix, const RC_INT k, const RC_INT l)
+{
+
+    RC_INT m = matrix->get_row_size();
+    RC_INT n = matrix->get_col_size();
+
+#ifdef _OPENMP
+#pragma omp declare reduction(complex_add : std::complex<double> : omp_out += omp_in) \
+    initializer(omp_priv = std::complex<double>(0, 0))
+#endif
+
+    std::complex<double> normSquared = std::complex<double>(0.0);
+#ifdef _OPENMP
+#pragma omp parallel for reduction(complex_add : normSquared)
+#endif
+    for (size_t j = 0; j < m; j++)
+    {
+        normSquared += matrix->mData[k * m + j] * std::conj(matrix->mData[l * m + j]);
+    }
+
+    return normSquared;
+}
+
+double _innerprod(const RC_device_matrix<double> *matrix, const RC_INT k, const RC_INT l)
+{
+
+    RC_INT m = matrix->get_row_size();
+    RC_INT n = matrix->get_col_size();
+
+    double normSquared = double(0.0);
+#ifdef _OPENMP
+#pragma omp parallel for reduction(+ : normSquared)
+#endif
+    for (size_t j = 0; j < m; j++)
+    {
+        normSquared += matrix->mData[k * m + j] * matrix->mData[l * m + j];
+    }
+
+    return normSquared;
 }
 
 
 template <typename T>
-void RC_device_matrix<T>::resize_rows(RC_INT n)
+void RC_device_matrix<T>::resize_cols(RC_INT n)
 {
     mData.resize(this->m * n);
     this->n = n;
@@ -223,7 +282,7 @@ void RC_device_matrix<T>::resize_rows(RC_INT n)
 }
 
 template <typename T>
-void RC_device_matrix<T>::resize_rows(RC_INT n, T value)
+void RC_device_matrix<T>::resize_cols(RC_INT n, T value)
 {
     if (n == this->n)
     {
@@ -244,7 +303,7 @@ void RC_device_matrix<T>::resize_rows(RC_INT n, T value)
 }
 
 template <typename T>
-void RC_device_matrix<T>::resize_rows(RC_INT n, RCvector<T> &V)
+void RC_device_matrix<T>::resize_cols(RC_INT n, RCvector<T> &V)
 {
     if (n == this->n)
     {
@@ -655,6 +714,60 @@ template void RC_device_matrix<CPX>::scale<CPX>(const CPX);
 
 template class RC_device_matrix<double>;
 template class RC_device_matrix<CPX>;
+
+
+template <typename T>
+RC_device_randomize<T>::RC_device_randomize()
+{
+    seed = 3141592;
+    randomGenerator.seed(seed);
+
+    // Initialize the distribution to be uniform in the interval [-1,1]
+    std::uniform_real_distribution<double>::param_type distParams(-1.0, 1.0);
+    distribution.param(distParams);
+}
+
+template <typename T>
+void RC_device_randomize<T>::randomize(RCvector<T> &V)
+{
+    for (size_t i = 0; i < V.get_size(); i++)
+    {
+        if constexpr (std::is_same<T, double>::value)
+        {
+            V.vData[i] = distribution(randomGenerator);
+        }
+        else if constexpr (std::is_same<T, std::complex<double>>::value)
+        {
+            std::complex<double> random_complex(distribution(randomGenerator), distribution(randomGenerator));
+            V.vData[i] = random_complex;
+        }
+        else
+        {
+            throw std::runtime_error("Error: randomize not defined for this type");
+        }
+    }
+}
+
+template <typename T>
+void RC_device_randomize<T>::randomize(RC_device_matrix<T> &M)
+{
+    for (size_t i = 0; i < M.get_size(); i++)
+    {
+        if constexpr (std::is_same<T, double>::value)
+        {
+            M.mData[i] = distribution(randomGenerator);
+        }
+        else if constexpr (std::is_same<T, std::complex<double>>::value)
+        {
+            std::complex<double> random_complex(distribution(randomGenerator), distribution(randomGenerator));
+            M.mData[i] = random_complex;
+        }
+        else
+        {
+            throw std::runtime_error("Error: randomize not defined for this type");
+        }
+    }
+}
 
 template class RC_device_randomize<double>;
 template class RC_device_randomize<CPX>;

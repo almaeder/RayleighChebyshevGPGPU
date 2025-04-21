@@ -843,7 +843,7 @@ protected:
 
         if (not nonRandomStartFlag)
         {
-            eigVectors.resize((RC_INT)(eigVectors.get_row_size()), (RC_INT)0);
+            eigVectors.resize_cols((RC_INT)(eigVectors.get_col_size()), (RC_INT)0);
         }
 
         RC_INT returnFlag = 0;
@@ -975,7 +975,6 @@ protected:
         }
 
         // Quick return if subspaceSize >= vector dimension
-
         if (vectorDimension == subspaceSize)
         {
             RC_INT maxOrthoCheck = 10;
@@ -1662,7 +1661,7 @@ protected:
                         subspaceIncrementSize = vectorDimension - foundSize;
                         subspaceSize = subspaceIncrementSize;
                         completedBasisFlag = true;
-                        mArray.resize_rows(subspaceSize);
+                        mArray.resize_cols(subspaceSize);
 
                         randOp.randomize(mArray);
                     }
@@ -1670,10 +1669,10 @@ protected:
                     {
                         bufferSize = vectorDimension - (foundSize + subspaceIncrementSize);
                         subspaceSize = subspaceIncrementSize + bufferSize;
-                        mArray.resize_rows(subspaceSize);
+                        mArray.resize_cols(subspaceSize);
                     }
 
-                    mArrayTmp.resize_rows(subspaceSize);
+                    mArrayTmp.resize_cols(subspaceSize);
 
                     VtAV.resize(subspaceSize, subspaceSize);
                     VtAVeigVector.initialize(subspaceSize, subspaceSize);

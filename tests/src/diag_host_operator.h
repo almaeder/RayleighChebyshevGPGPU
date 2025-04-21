@@ -1,23 +1,22 @@
 #pragma once
-#include "../../RC_abstract_operator.h"
 #include "../../RC_host_matrix.h"
 
 using CPX = std::complex<double>;
 
-#ifndef DIAG_OPERATOR_
-#define DIAG_OPERATOR_
+#ifndef DIAG_HOST_OPERATOR_
+#define DIAG_HOST_OPERATOR_
 
 template <typename T, typename Matrix>
-class diag_operator
+class diag_host_operator
 {
     public:
     std::vector<T> data;
 
-	diag_operator();
+	diag_host_operator();
 
-    diag_operator(RC_INT n);
+    diag_host_operator(RC_INT n);
 
-	~diag_operator();
+	~diag_host_operator();
 
 	virtual void apply(RCvector<T>& V);
 
@@ -27,4 +26,4 @@ class diag_operator
 
 };
 
-#endif /* DIAG_OPERATOR_ */
+#endif /* DIAG_HOST_OPERATOR_ */

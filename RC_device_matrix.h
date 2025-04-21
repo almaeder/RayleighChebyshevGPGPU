@@ -14,8 +14,6 @@
 template <typename T>
 class RC_device_matrix : public RC_host_matrix<T>
 {
-protected:
-    using Base = RC_host_matrix<T>;
 
 public:
 	//////////////////////////////////////////////////////////
@@ -73,11 +71,11 @@ public:
 	void _scale(const RC_INT k, const T alpha);
 	void _scale_add(const RC_INT k, const RC_INT l, const T alpha);
 
-	void resize_rows(RC_INT n);
+	void resize_cols(RC_INT n);
 
-	void resize_rows(RC_INT n, T value);
+	void resize_cols(RC_INT n, T value);
 
-	void resize_rows(RC_INT n, RCvector<T> &V);
+	void resize_cols(RC_INT n, RCvector<T> &V);
 
 	void resize(RC_INT m, RC_INT n);
 
@@ -125,9 +123,18 @@ public:
 #define RC_DEVICE_RANDOMIZE_
 
 template <typename T>
-class RC_device_randomize : public RC_host_randomize<T>
+class RC_device_randomize : public RC_abstract_randomize<T, RC_device_matrix<T>>
 {
+public:
+	RC_device_randomize();
 
+	void randomize(RCvector<T> &V);
+
+	void randomize(RC_device_matrix<T> &M);
+
+	int seed;
+	std::mt19937_64 randomGenerator;
+	std::uniform_real_distribution<double> distribution;
 };
 
 #endif /* RC_DEVICE_RANDOMIZE_ */
