@@ -4,9 +4,11 @@
 #include "RC_host_matrix.h"
 #include "cudaErrchk.h"
 #include "cuda_kernels.h"
+#include "cudaHandles.h"
 
 #include <cusolverDn.h>
 #include <cublas_v2.h>
+
 
 #ifndef RC_DEVICE_MATRIX_
 #define RC_DEVICE_MATRIX_

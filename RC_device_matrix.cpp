@@ -61,11 +61,6 @@ RC_device_matrix<T>::~RC_device_matrix()
         cudaFree(_eig_residuals_d);
     }
 
-    if (cublas_handle != NULL)
-    {
-        cublasErrchk(cublasDestroy(cublas_handle));
-    }
-
 }
 
 //////////////////////////////////////////////////////////////////
@@ -558,14 +553,8 @@ void RC_device_matrix<T>::scale(const T1 alpha)
 
 template <typename T>
 void RC_device_matrix<T>::_create_cuda_handles(){
-    if (cusolverDn_handle == NULL)
-    {
-        cusolverErrchk(cusolverDnCreate(&cusolverDn_handle));
-    }
-    if (cublas_handle == NULL)
-    {
-        cublasErrchk(cublasCreate(&cublas_handle));
-    }
+    cusolverDn_handle = cudaHandles::getInstance()->cusolverDn_handle;
+    cublas_handle = cudaHandles::getInstance()->cublas_handle;
 }
 
 template <typename T>
