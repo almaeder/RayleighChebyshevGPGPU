@@ -252,3 +252,70 @@ TEST_F(
     }
 
 }
+
+
+TEST_F(
+    device_matrix,
+    solve_new)
+{
+
+
+    RC_device_randomize<CPX> rc_randomize;
+
+    RC_device_matrix<CPX> eig_vectors;
+
+
+    RayleighChebyshev<
+        RC_device_matrix<CPX>,
+        RCvector<CPX>,
+        diag_device_operator<CPX, RC_device_matrix<CPX>>,
+        RC_device_randomize<CPX>,
+        CPX>
+        *rc_procedure;
+
+    rc_procedure = new RayleighChebyshev<
+        RC_device_matrix<CPX>,
+        RCvector<CPX>,
+        diag_device_operator<CPX, RC_device_matrix<CPX>>,
+        RC_device_randomize<CPX>,
+        CPX>();
+        
+    std::string stop_condition = "RESIDUAL_ONLY";
+
+    (*rc_procedure).setStopCondition(stop_condition);
+    (*rc_procedure).setEigDiagnosticsFlag(true);
+    (*rc_procedure).setVerboseFlag(true);
+
+    int eig_count = 2;
+    double subspace_tol = 1e-6;
+    int subspace_size = 2;
+    int buffer_size = 2;
+    RCvector<CPX> vTmp(matrix_size);
+    std::vector<double> eig_values;
+
+    eig_vectors.resize(matrix_size, subspace_size + buffer_size);
+
+    diag_device_operator<CPX, RC_device_matrix<CPX>> rc_operator(matrix_size, subspace_size + buffer_size);
+
+    (*rc_procedure).getMinEigenSystem(
+                    eig_count,
+                    subspace_tol,
+                    subspace_size,
+                    buffer_size,
+                    vTmp,
+                    rc_operator,
+                    rc_randomize,
+                    eig_values,
+                    eig_vectors);
+
+    delete rc_procedure;
+
+
+    for(int i = 0; i < eig_count; i++)
+    {
+        // NOTE: Tol is for residual and not for eig value
+        ASSERT_NEAR(eig_values[i], (i+1), subspace_tol);
+    }
+
+}
+
