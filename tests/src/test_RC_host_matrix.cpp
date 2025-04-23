@@ -170,8 +170,8 @@ TEST_F(
         CPX inner_product = rc_matrix.inner_product(i, i);
 
         // compare real and complex parts separately
-        ASSERT_DOUBLE_EQ(inner_product.real(), 1);
-        ASSERT_DOUBLE_EQ(inner_product.imag(), 0);
+        ASSERT_NEAR(inner_product.real(), 1, 1e-14);
+        ASSERT_NEAR(inner_product.imag(), 0, 1e-14);
     }
 
     for (int i = 0; i < number_of_vectors; i++) {
@@ -181,8 +181,8 @@ TEST_F(
             CPX inner_product = rc_matrix.inner_product(i, j);
 
             // compare real and complex parts separately
-            ASSERT_NEAR(inner_product.real(), 0, 1e-15);
-            ASSERT_NEAR(inner_product.imag(), 0, 1e-15);
+            ASSERT_NEAR(inner_product.real(), 0, 1e-14);
+            ASSERT_NEAR(inner_product.imag(), 0, 1e-14);
         }
     }
 
@@ -235,8 +235,8 @@ TEST_F(
 
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-            ASSERT_NEAR(C_matrix(i, j).real(), C_ref[i + j * m].real(), 1e-15);
-            ASSERT_NEAR(C_matrix(i, j).imag(), C_ref[i + j * m].imag(), 1e-15);
+            ASSERT_NEAR(C_matrix(i, j).real(), C_ref[i + j * m].real(), 1e-14);
+            ASSERT_NEAR(C_matrix(i, j).imag(), C_ref[i + j * m].imag(), 1e-14);
         }
     }
 }

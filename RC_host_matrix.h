@@ -2,6 +2,8 @@
 #pragma once
 #include "RC_Vector.h"
 #include "RC_abstract_matrix.h"
+#include <mkl_lapacke.h>
+#include <mkl_cblas.h>
 
 #ifndef RC_HOST_MATRIX_
 #define RC_HOST_MATRIX_
@@ -88,6 +90,7 @@ public:
 	void _create_cuda_descriptor();
 
 	std::vector<T> mData;
+	std::vector<T> tau;
 };
 
 #endif /* RC_HOST_MATRIX_ */

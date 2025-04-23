@@ -69,6 +69,7 @@ void RC_host_matrix<T>::device_to_device_copy(const RC_host_matrix<T> &W)
         throw std::runtime_error("Error: matrix sizes do not match");
     }
 
+    #pragma omp parallel for collapse(2)
     for (size_t i = 0; i < this->m; i++)
     {
         for (size_t j = 0; j < this->n; j++)
@@ -81,9 +82,7 @@ void RC_host_matrix<T>::device_to_device_copy(const RC_host_matrix<T> &W)
 template <typename T>
 void RC_host_matrix<T>::initialize(const RC_host_matrix<T> &W)
 {
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2)
-#endif
+    #pragma omp parallel for collapse(2)
     for (size_t i = 0; i < W.n; i++)
     {
         for (size_t j = 0; j < W.m; j++)
@@ -96,9 +95,7 @@ void RC_host_matrix<T>::initialize(const RC_host_matrix<T> &W)
 template <typename T>
 void RC_host_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
 {
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2)
-#endif
+    #pragma omp parallel for collapse(2)
     for (size_t i = 0; i < n; i++)
     {
         for (size_t j = 0; j < this->m; j++)
@@ -111,22 +108,55 @@ void RC_host_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
 template <typename T>
 void RC_host_matrix<T>::orthogonalize()
 {
-    // orthogonalize the columns of the matrix
-    // wiith modified gram schmidt
 
-    for (long k = 1; k <= this->n; k++)
+    tau.resize(this->n);
+
+    if constexpr (std::is_same<T, double>::value)
     {
+        LAPACKE_dgeqrf(
+            LAPACK_COL_MAJOR,
+            this->m,
+            this->n,
+            this->mData.data(),
+            this->m,
+            tau.data()
+        );
 
-        auto rkk = std::sqrt(std::abs(this->inner_product(k - 1, k - 1)));
-
-        _scale(k - 1, 1.0 / rkk);
-        for (long j = k + 1; j <= this->n; j++)
-        {
-            auto rkj = this->inner_product(j - 1, k - 1);
-
-            _scale_add(j - 1, k - 1, -rkj);
-        }
+        LAPACKE_dorgqr(
+            LAPACK_COL_MAJOR,
+            this->m,
+            this->n,
+            this->n,
+            this->mData.data(),
+            this->m,
+            tau.data()
+        );
     }
+    else if constexpr (std::is_same<T, std::complex<double>>::value)
+    {
+        LAPACKE_zgeqrf(
+            LAPACK_COL_MAJOR,
+            this->m,
+            this->n,
+            (MKL_Complex16*)this->mData.data(),
+            this->m,
+            (MKL_Complex16*)tau.data()
+        );
+
+        LAPACKE_zungqr(
+            LAPACK_COL_MAJOR,
+            this->m,
+            this->n,
+            this->n,
+            (MKL_Complex16*)this->mData.data(),
+            this->m,
+            (MKL_Complex16*)tau.data()
+        );
+    }
+    else{
+        throw std::runtime_error("Error: orthogonalize not defined for this type");
+    }
+
 }
 
 template <typename T>
@@ -146,9 +176,7 @@ RC_host_matrix<T> &RC_host_matrix<T>::operator=(const RC_host_matrix<T> &W)
 template <typename T>
 void RC_host_matrix<T>::normalize()
 {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+    #pragma omp parallel for
     for (int k = 0; k < this->n; k++)
     {
         T normSquared = T(0.0);
@@ -183,15 +211,12 @@ CPX _innerprod(const RC_host_matrix<CPX> *matrix, const RC_INT k, const RC_INT l
     RC_INT m = matrix->get_row_size();
     RC_INT n = matrix->get_col_size();
 
-#ifdef _OPENMP
-#pragma omp declare reduction(complex_add : std::complex<double> : omp_out += omp_in) \
-    initializer(omp_priv = std::complex<double>(0, 0))
-#endif
+    #pragma omp declare reduction(complex_add : std::complex<double> : omp_out += omp_in) \
+        initializer(omp_priv = std::complex<double>(0, 0))
 
     std::complex<double> normSquared = std::complex<double>(0.0);
-#ifdef _OPENMP
-#pragma omp parallel for reduction(complex_add : normSquared)
-#endif
+
+    #pragma omp parallel for reduction(complex_add : normSquared)
     for (size_t j = 0; j < m; j++)
     {
         normSquared += matrix->mData[k * m + j] * std::conj(matrix->mData[l * m + j]);
@@ -207,9 +232,8 @@ double _innerprod(const RC_host_matrix<double> *matrix, const RC_INT k, const RC
     RC_INT n = matrix->get_col_size();
 
     double normSquared = double(0.0);
-#ifdef _OPENMP
-#pragma omp parallel for reduction(+ : normSquared)
-#endif
+
+    #pragma omp parallel for reduction(+ : normSquared)
     for (size_t j = 0; j < m; j++)
     {
         normSquared += matrix->mData[k * m + j] * matrix->mData[l * m + j];
@@ -221,9 +245,8 @@ double _innerprod(const RC_host_matrix<double> *matrix, const RC_INT k, const RC
 template <typename T>
 void RC_host_matrix<T>::_scale(const RC_INT k, const T alpha)
 {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+
+    #pragma omp parallel for
     for (size_t j = 0; j < this->m; j++)
     {
         mData[k * this->m + j] *= alpha;
@@ -233,9 +256,8 @@ void RC_host_matrix<T>::_scale(const RC_INT k, const T alpha)
 template <typename T>
 void RC_host_matrix<T>::_scale_add(const RC_INT k, const RC_INT l, const T alpha)
 {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+
+    #pragma omp parallel for
     for (size_t j = 0; j < this->m; j++)
     {
         mData[k * this->m + j] += alpha * mData[l * this->m + j];
@@ -254,6 +276,7 @@ void RC_host_matrix<T>::resize_cols(RC_INT n, T value)
 {
     if (n == this->n)
     {
+        #pragma omp parallel for
         for (size_t i = 0; i < mData.size(); i++)
         {
             mData[i] = value;
@@ -271,7 +294,7 @@ void RC_host_matrix<T>::resize_cols(RC_INT n, RCvector<T> &V)
 {
     if (n == this->n)
     {
-#pragma omp parallel for collapse(2)
+        #pragma omp parallel for collapse(2)
         for (size_t i = 0; i < n; i++)
         {
             for (size_t j = 0; j < this->m; j++)
@@ -284,7 +307,7 @@ void RC_host_matrix<T>::resize_cols(RC_INT n, RCvector<T> &V)
     {
         mData.resize(this->m * n);
         this->n = n;
-#pragma omp parallel for collapse(2)
+        #pragma omp parallel for collapse(2)
         for (size_t i = 0; i < n; i++)
         {
             for (size_t j = 0; j < this->m; j++)
@@ -316,17 +339,58 @@ void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix
         throw std::runtime_error("Error: matrix sizes do not match");
     }
 
-    for (size_t i = 0; i < this->m; i++)
+    // for (size_t i = 0; i < this->m; i++)
+    // {
+    //     for (size_t j = 0; j < this->n; j++)
+    //     {
+    //         operator()(i, j) = beta * operator()(i, j);
+    //         for (size_t k = 0; k < A.n; k++)
+    //         {
+    //             operator()(i, j) += alpha * A(i, k) * B(k, j);
+    //         }
+    //     }
+    // }
+
+    if constexpr (std::is_same<T, double>::value)
     {
-        for (size_t j = 0; j < this->n; j++)
-        {
-            operator()(i, j) = beta * operator()(i, j);
-            for (size_t k = 0; k < A.n; k++)
-            {
-                operator()(i, j) += alpha * A(i, k) * B(k, j);
-            }
-        }
+        cblas_dgemm(
+            CblasColMajor, CblasNoTrans, CblasNoTrans,
+            this->m,
+            this->n,
+            B.m,
+            alpha,
+            A.mData.data(),
+            A.m,
+            B.mData.data(),
+            B.m,
+            beta,
+            this->mData.data(),
+            this->m
+            );
     }
+    else if constexpr (std::is_same<T, std::complex<double>>::value)
+    {
+        cblas_zgemm(
+            CblasColMajor, CblasNoTrans, CblasNoTrans,
+            this->m,
+            this->n,
+            B.m,
+            &alpha,
+            A.mData.data(),
+            A.m,
+            B.mData.data(),
+            B.m,
+            &beta,
+            this->mData.data(),
+            this->m
+        );
+
+    }
+    else
+    {
+        throw std::runtime_error("Error: matmult not defined for this type");
+    }
+
 }
 
 template <typename T>
@@ -337,10 +401,14 @@ void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix
     // B is k by n
     // this = alpha * A * B + beta * this
 
-    RC_INT kdim = A.n;
+    if (conj_A != "C" | conj_B != "N"){
+        throw std::runtime_error("Error: invalid conjugation type for A or B, not implemented");
+    }
+
+    RC_INT k = A.n;
     if (conj_A == "C" | conj_A == "T")
     {
-        kdim = A.m;
+        k = A.m;
     }
 
     else
@@ -366,14 +434,14 @@ void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix
 
     if (conj_B == "N")
     {
-        if ((this->n != B.n) | (kdim != B.m))
+        if ((this->n != B.n) | (k != B.m))
         {
             throw std::runtime_error("Error: matrix sizes do not match");
         }
     }
     else if (conj_B == "C")
     {
-        if ((this->n != B.m) | (kdim != B.n))
+        if ((this->n != B.m) | (k != B.n))
         {
             throw std::runtime_error("Error: matrix sizes do not match");
         }
@@ -383,43 +451,39 @@ void RC_host_matrix<T>::matmult(const RC_host_matrix<T> &A, const RC_host_matrix
         throw std::runtime_error("Error: invalid conjugation type for B");
     }
 
-    for (size_t i = 0; i < this->m; i++)
+    if constexpr (std::is_same<T, double>::value)
     {
-        for (size_t j = 0; j < this->n; j++)
-        {
-            operator()(i, j) = beta * operator()(i, j);
-            for (size_t k = 0; k < kdim; k++)
-            {
-                if (conj_A == "N" & conj_B == "N")
-                {
-                    operator()(i, j) += alpha * A(i, k) * B(k, j);
-                }
-                else if (conj_A == "C" & conj_B == "N")
-                {
-                    if constexpr (std::is_same<T, std::complex<double>>::value)
-                    {
-                        operator()(i, j) += alpha * std::conj(A(k, i)) * B(k, j);
-                    }
-                    // else
-                    //     operator()(i, j) += alpha * A(k,i) * B(k,j);
-                    continue;
-                }
-                else if (conj_A == "N" & conj_B == "C")
-                {
-                    if constexpr (std::is_same<T, std::complex<double>>::value)
-                        operator()(i, j) += alpha * A(i, k) * std::conj(B(j, k));
-                    else
-                        operator()(i, j) += alpha * A(i, k) * B(j, k);
-                }
-                else if (conj_A == "C" & conj_B == "C")
-                {
-                    if constexpr (std::is_same<T, std::complex<double>>::value)
-                        operator()(i, j) += alpha * std::conj(A(k, i)) * std::conj(B(j, k));
-                    else
-                        operator()(i, j) += alpha * A(k, i) * B(j, k);
-                }
-            }
-        }
+        cblas_dgemm(
+            CblasColMajor, CblasTrans, CblasNoTrans,
+            this->m,
+            this->n,
+            k,
+            alpha,
+            A.mData.data(),
+            A.m,
+            B.mData.data(),
+            B.m,
+            beta,
+            this->mData.data(),
+            this->m
+            );
+    }
+    else if constexpr (std::is_same<T, std::complex<double>>::value)
+    {
+        cblas_zgemm(
+            CblasColMajor, CblasConjTrans, CblasNoTrans,
+            this->m,
+            this->n,
+            k,
+            &alpha,
+            A.mData.data(),
+            A.m,
+            B.mData.data(),
+            B.m,
+            &beta,
+            this->mData.data(),
+            this->m
+            );
     }
 }
 
@@ -442,6 +506,7 @@ void RC_host_matrix<T>::residuals(const RC_host_matrix<T> &OpA, const std::vecto
         throw std::runtime_error("Error: matrix sizes do not match");
     }
 
+    #pragma omp parallel for
     for (int i = 0; i < residualCheckCount; i++)
     {
         T normSquared;
@@ -473,6 +538,7 @@ void RC_host_matrix<T>::substract(const RC_host_matrix<T> &A){
         throw std::runtime_error("Error: matrix sizes do not match");
     }
 
+    #pragma omp parallel for collapse(2)
     for (size_t i = 0; i < this->m; i++)
     {
         for (size_t j = 0; j < this->n; j++)
@@ -486,6 +552,7 @@ void RC_host_matrix<T>::substract(const RC_host_matrix<T> &A){
 template <typename T>
 void RC_host_matrix<T>::scale(const T alpha)
 {
+    #pragma omp parallel for collapse(2)
     for (size_t i = 0; i < this->m; i++)
     {
         for (size_t j = 0; j < this->n; j++)
