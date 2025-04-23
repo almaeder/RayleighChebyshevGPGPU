@@ -43,7 +43,9 @@ RC_device_matrix<T>::~RC_device_matrix()
 {
     if (matrix_desc != NULL && mData_d != NULL){
         cusparseDestroyDnMat(matrix_desc);
-        cudaFree(mData_d);
+        cudaErrchk(cudaFree(mData_d));
+        matrix_desc = NULL;
+        mData_d = NULL;
     }
     else if (matrix_desc == NULL && mData_d == NULL){
         return;
@@ -54,12 +56,35 @@ RC_device_matrix<T>::~RC_device_matrix()
 
     if (_eig_values_d != NULL)
     {
-        cudaFree(_eig_values_d);
+        cudaErrchk(cudaFree(_eig_values_d));
+        _eig_values_d = NULL;
     }
     if (_eig_residuals_d != NULL)
     {
-        cudaFree(_eig_residuals_d);
+        cudaErrchk(cudaFree(_eig_residuals_d));
+        _eig_residuals_d = NULL;
     }
+    if (tau_d != NULL)
+    {
+        cudaErrchk(cudaFree(tau_d));
+        tau_d = NULL;
+    }
+    if (geqrf_work_d != NULL)
+    {
+        cudaErrchk(cudaFree(geqrf_work_d));
+        geqrf_work_d = NULL;
+    }
+    if (gqr_work_d != NULL)
+    {
+        cudaErrchk(cudaFree(gqr_work_d));
+        gqr_work_d = NULL;
+    }
+    if (info_d != NULL)
+    {
+        cudaErrchk(cudaFree(info_d));
+        info_d = NULL;
+    }
+
 
 }
 

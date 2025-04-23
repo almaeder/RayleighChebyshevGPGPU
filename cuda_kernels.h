@@ -3,6 +3,7 @@
 #include <complex>
 #include <cuComplex.h>
 #include <type_traits>
+#include "cudaErrchk.h"
 
 namespace cuda_kernels
 {

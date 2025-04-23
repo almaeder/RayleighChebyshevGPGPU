@@ -292,7 +292,7 @@ void normalize(
 ){
 
     T *b_d;
-    cudaMalloc(&b_d,  n * sizeof(T));
+    cudaErrchk(cudaMalloc(&b_d,  n * sizeof(T)));
 
     if constexpr (std::is_same<T, std::complex<double>>::value){
         _reduce_norms_complex<<<n, THREADS>>>(
@@ -313,7 +313,7 @@ void normalize(
         _normalize<<<blocks, THREADS>>>(a_d, b_d, m, n);
     }
 
-    cudaFree(b_d);
+    cudaErrchk(cudaFree(b_d));
 }
 template void normalize<double>(double *a_d, const int m, const int n);
 template void normalize<std::complex<double>>(std::complex<double> *a_d, const int m, const int n);
