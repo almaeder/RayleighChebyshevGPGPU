@@ -185,3 +185,150 @@ TEST_F(
     }
 
 }
+
+
+
+TEST_F(
+    host_matrix,
+    solve_twice)
+{
+
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+
+    RC_host_randomize<CPX> rc_randomize;
+
+    RC_host_matrix<CPX> eig_vectors;
+
+
+    RayleighChebyshev<
+        RC_host_matrix<CPX>,
+        RCvector<CPX>,
+        diag_host_operator<CPX, RC_host_matrix<CPX>>,
+        RC_host_randomize<CPX>,
+        CPX>
+        rc_procedure;
+
+    std::string stop_condition = "RESIDUAL_ONLY";
+
+    (rc_procedure).setStopCondition(stop_condition);
+    (rc_procedure).setEigDiagnosticsFlag(true);
+    (rc_procedure).setVerboseFlag(true);
+
+    int eig_count = 2;
+    double subspace_tol = 1e-6;
+    int subspace_size = 2;
+    int buffer_size = 2;
+    RCvector<CPX> vTmp(matrix_size);
+    std::vector<double> eig_values;
+
+    eig_vectors.resize(matrix_size, subspace_size + buffer_size);
+
+    rc_procedure.getMinEigenSystem(
+                    eig_count,
+                    subspace_tol,
+                    subspace_size,
+                    buffer_size,
+                    vTmp,
+                    rc_operator,
+                    rc_randomize,
+                    eig_values,
+                    eig_vectors);
+
+    for(int i = 0; i < eig_count; i++)
+    {
+        // NOTE: Tol is for residual and not for eig value
+        ASSERT_NEAR(eig_values[i], (i+1), subspace_tol);
+    }
+
+    rc_procedure.getMinEigenSystem(
+        eig_count,
+        subspace_tol,
+        subspace_size,
+        buffer_size,
+        vTmp,
+        rc_operator,
+        rc_randomize,
+        eig_values,
+        eig_vectors);
+
+    for(int i = 0; i < eig_count; i++)
+    {
+        // NOTE: Tol is for residual and not for eig value
+        ASSERT_NEAR(eig_values[i], (i+1), subspace_tol);
+    }
+
+}
+
+
+TEST_F(
+    host_matrix,
+    solve_twice_starting_guess)
+{
+
+    diag_host_operator<CPX, RC_host_matrix<CPX>> rc_operator(matrix_size);
+
+    RC_host_randomize<CPX> rc_randomize;
+
+    RC_host_matrix<CPX> eig_vectors;
+
+
+    RayleighChebyshev<
+        RC_host_matrix<CPX>,
+        RCvector<CPX>,
+        diag_host_operator<CPX, RC_host_matrix<CPX>>,
+        RC_host_randomize<CPX>,
+        CPX>
+        rc_procedure;
+
+    std::string stop_condition = "RESIDUAL_ONLY";
+
+    (rc_procedure).setStopCondition(stop_condition);
+    (rc_procedure).setEigDiagnosticsFlag(true);
+    (rc_procedure).setVerboseFlag(true);
+
+    int eig_count = 2;
+    double subspace_tol = 1e-6;
+    int subspace_size = 2;
+    int buffer_size = 2;
+    RCvector<CPX> vTmp(matrix_size);
+    std::vector<double> eig_values;
+
+    eig_vectors.resize(matrix_size, subspace_size + buffer_size);
+
+    rc_procedure.getMinEigenSystem(
+                    eig_count,
+                    subspace_tol,
+                    subspace_size,
+                    buffer_size,
+                    vTmp,
+                    rc_operator,
+                    rc_randomize,
+                    eig_values,
+                    eig_vectors);
+
+    for(int i = 0; i < eig_count; i++)
+    {
+        // NOTE: Tol is for residual and not for eig value
+        ASSERT_NEAR(eig_values[i], (i+1), subspace_tol);
+    }
+
+    rc_procedure.setNonRandomStartFlag();
+
+    rc_procedure.getMinEigenSystem(
+        eig_count,
+        subspace_tol,
+        subspace_size,
+        buffer_size,
+        vTmp,
+        rc_operator,
+        rc_randomize,
+        eig_values,
+        eig_vectors);
+
+    for(int i = 0; i < eig_count; i++)
+    {
+        // NOTE: Tol is for residual and not for eig value
+        ASSERT_NEAR(eig_values[i], (i+1), subspace_tol);
+    }
+
+}
