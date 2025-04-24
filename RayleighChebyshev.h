@@ -949,7 +949,6 @@ protected:
         if (not nonRandomStartFlag)
         {
             randOp.randomize(mArray);
-            mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
         }
         else
         {
@@ -965,14 +964,14 @@ protected:
                     }
                 }
 
-                mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
             }
             else
             {
                 mArray.initialize(eigVectors);
-                mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
             }
         }
+        mArrayTmp.initialize(eigVectors.get_row_size(), subspaceSize);
+
 
         // Quick return if subspaceSize >= vector dimension
         if (vectorDimension == subspaceSize)
@@ -1079,7 +1078,6 @@ protected:
 
 
             mArray.host_to_device_copy();
-            mArray.orthogonalize();
             mArray.orthogonalize();
 
             incrementTime("ortho");
@@ -1192,7 +1190,7 @@ protected:
 
                 if (not completedBasisFlag)
                 {
-                    cOp.apply(mArray);
+                    cOp.apply(mArray, mArrayTmp);
                 }
 
                 applyCount += 1;
@@ -1550,7 +1548,7 @@ protected:
                 eigVectors.resize(eigVectors.get_row_size(), foundSize + foundCount);
                 eigValues.resize(foundSize + foundCount, 0.0);
 
-#pragma omp parallel for
+                #pragma omp parallel for
                 for (RC_INT i = 0; i < foundCount; i++)
                 {
 
@@ -1587,7 +1585,7 @@ protected:
                 {
                     for (RC_INT j = 0; j < mArray.get_row_size(); j++)
                     {
-                        mArrayTmp(j, k) = mArray(j, k + foundCount);
+                        mArray(j, k) = mArray(j, k + foundCount);
                     }
                 }
             }

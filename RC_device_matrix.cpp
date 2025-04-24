@@ -167,6 +167,9 @@ void RC_device_matrix<T>::initialize(const RCvector<T> &V, RC_INT n)
 template <typename T>
 void RC_device_matrix<T>::orthogonalize()
 {
+
+    _allocate_qr_memory();
+
     if constexpr (std::is_same<T, double>::value)
     {
         cusolverErrchk(cusolverDnDgeqrf(
@@ -298,7 +301,6 @@ void RC_device_matrix<T>::resize_cols(RC_INT n)
     _create_cuda_memory();
     _create_cuda_descriptor();
     _create_cuda_handles();
-    _allocate_qr_memory();
 }
 
 template <typename T>
@@ -318,7 +320,6 @@ void RC_device_matrix<T>::resize_cols(RC_INT n, T value)
         _create_cuda_memory();
         _create_cuda_descriptor();
         _create_cuda_handles();
-        _allocate_qr_memory();
     }
 }
 
@@ -351,7 +352,6 @@ void RC_device_matrix<T>::resize_cols(RC_INT n, RCvector<T> &V)
         _create_cuda_memory();
         _create_cuda_descriptor();
         _create_cuda_handles();
-        _allocate_qr_memory();
     }
 }
 
@@ -364,7 +364,6 @@ void RC_device_matrix<T>::resize(RC_INT m, RC_INT n)
     _create_cuda_memory();
     _create_cuda_descriptor();
     _create_cuda_handles();
-    _allocate_qr_memory();
 }
 
 template <typename T>

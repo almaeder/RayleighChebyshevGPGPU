@@ -191,7 +191,8 @@ void setRepetitionFactor(RC_INT repetitionFactor)
 //
 
 
-void apply(Amatrix& mArray)
+// reduce memory consumption by reusing the input vectors
+void apply(Amatrix& mArray, Amatrix& bufferArray)
 {
     RC_INT repCount;
     RC_INT k;
@@ -209,17 +210,16 @@ void apply(Amatrix& mArray)
     double gamma2     =  2.0 - (4.0*shift)/rhoB;
 
     RC_INT vSize = (RC_INT)mArray.get_col_size();
-    vn.resize(mArray.get_row_size(), mArray.get_col_size());
-    vnm1.resize(mArray.get_row_size(), mArray.get_col_size());
+
+    bufferArray.resize(mArray.get_row_size(), mArray.get_col_size());
     vnm2.resize(mArray.get_row_size(), mArray.get_col_size());
 
-    vn.device_to_device_copy(mArray);
-    vnm1.device_to_device_copy(mArray);
+
+    bufferArray.device_to_device_copy(mArray);
     vnm2.device_to_device_copy(mArray);
 
-
-    vnArrayPtr   = &vn;
-    vnm1ArrayPtr = &vnm1;
+    vnArrayPtr   = &mArray;
+    vnm1ArrayPtr = &bufferArray;
     vnm2ArrayPtr = &vnm2;
 
 
@@ -261,7 +261,13 @@ void apply(Amatrix& mArray)
 
      }
 
-    mArray.device_to_device_copy(*vnm1ArrayPtr);
+
+    // if pointers are not the same, copy the result
+    // can happen depending on repetitionFactor
+    if (vnm1ArrayPtr != &mArray){
+        mArray.device_to_device_copy(*vnm1ArrayPtr);        
+    }
+
 
 }
 
@@ -276,15 +282,13 @@ void apply(Amatrix& mArray)
 
     Otype* Op;
 
-   Amatrix vn;
-   Amatrix vnm1;
-   Amatrix vnm2;
+    Amatrix vnm2;
 
 
-   Amatrix* vnArrayPtr;
-   Amatrix* vnm1ArrayPtr;
-   Amatrix* vnm2ArrayPtr;
-   Amatrix* vTmpArrayPtr;
+    Amatrix* vnArrayPtr;
+    Amatrix* vnm1ArrayPtr;
+    Amatrix* vnm2ArrayPtr;
+    Amatrix* vTmpArrayPtr;
 };
 
 #endif
