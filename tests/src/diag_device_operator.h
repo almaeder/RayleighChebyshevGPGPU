@@ -8,7 +8,12 @@
 #include <cusparse_v2.h>
 #include <chrono>
 #include "../../cudaErrchk.h"
+
+#ifdef USE_MKL
 #include <mkl_spblas.h>
+#else
+#include <nvpl_sparse.h>
+#endif
 
 using CPX = std::complex<double>;
 
@@ -35,7 +40,18 @@ class diag_device_operator
 	int* indptr = NULL;
 	int* indices = NULL;
 	T* data = NULL;
+
+	#ifdef USE_MKL
 	char *matdescra = NULL;
+	#else
+	nvpl_sparse_handle_t nvpl_sparse_handle;
+	nvpl_sparse_const_sp_mat_descr_t    mat_A;
+	nvpl_sparse_const_dn_vec_descr_t    vec_X;
+	nvpl_sparse_dn_vec_descr_t          vec_Y;
+	nvpl_sparse_dn_vec_descr_t          vec_Z;
+	nvpl_sparse_spmv_descr_t            spmv_descr;
+	size_t                              buffer_size;
+	#endif
 
     // device data
 	int* indptr_d = NULL;

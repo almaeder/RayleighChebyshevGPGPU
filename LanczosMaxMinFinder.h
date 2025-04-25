@@ -84,7 +84,7 @@ extern "C" {
     #include <mkl_lapacke.h>
     #include <mkl_lapack.h>
     #else
-    #include <blas.h>
+    //#include <blas.h>
     #include <cblas.h>
     #include <lapacke.h>
     #include <lapack.h>

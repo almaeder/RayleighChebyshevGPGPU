@@ -138,9 +138,19 @@ void RC_host_matrix<T>::orthogonalize()
             LAPACK_COL_MAJOR,
             this->m,
             this->n,
-            (MKL_Complex16*)this->mData.data(),
+            #ifdef USE_MKL
+            (MKL_Complex16*)(
+            #else
+            reinterpret_cast<__complex__ double*>(
+            #endif
+            this->mData.data()),
             this->m,
-            (MKL_Complex16*)tau.data()
+            #ifdef USE_MKL
+            (MKL_Complex16*)(
+            #else
+            reinterpret_cast<__complex__ double*>(
+            #endif
+            tau.data())
         );
 
         LAPACKE_zungqr(
@@ -148,9 +158,19 @@ void RC_host_matrix<T>::orthogonalize()
             this->m,
             this->n,
             this->n,
-            (MKL_Complex16*)this->mData.data(),
+            #ifdef USE_MKL
+            (MKL_Complex16*)(
+            #else
+            reinterpret_cast<__complex__ double*>(
+            #endif
+            this->mData.data()),
             this->m,
-            (MKL_Complex16*)tau.data()
+            #ifdef USE_MKL
+            (MKL_Complex16*)(
+            #else
+            reinterpret_cast<__complex__ double*>(
+            #endif
+            tau.data())
         );
     }
     else{

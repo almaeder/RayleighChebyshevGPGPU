@@ -2,8 +2,22 @@
 #pragma once
 #include "RC_Vector.h"
 #include "RC_abstract_matrix.h"
-#include <mkl_lapacke.h>
-#include <mkl_cblas.h>
+
+#undef USE_MKL
+
+extern "C" {
+    #ifdef USE_MKL
+    #include <mkl_blas.h>
+    #include <mkl_cblas.h>
+    #include <mkl_lapacke.h>
+    #include <mkl_lapack.h>
+    #else
+    //#include <blas.h>
+    #include <cblas.h>
+    #include <lapacke.h>
+    #include <lapack.h>
+    #endif
+}
 
 #ifndef RC_HOST_MATRIX_
 #define RC_HOST_MATRIX_

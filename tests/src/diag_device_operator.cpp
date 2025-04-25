@@ -35,11 +35,15 @@ diag_device_operator<T, Matrix>::diag_device_operator(RC_INT n, RC_INT subspace_
             throw std::runtime_error("Unsupported type");
     }
 
+    #ifdef USE_MKL
     matdescra = new char[6];
     matdescra[0] = 'G';
     matdescra[1] = 'L';
     matdescra[2] = 'N';
     matdescra[3] = 'F';
+	#else
+	#endif
+
 
     cudaMalloc(&in_vector_d, size * sizeof(T));
     cudaMalloc(&out_vector_d, size * sizeof(T));
@@ -125,9 +129,12 @@ diag_device_operator<T, Matrix>::~diag_device_operator()
     if (data != NULL) {
         delete[] data;
     }
+    #ifdef USE_MKL
     if (matdescra != NULL) {
         delete[] matdescra;
     }
+    #else
+    #endif
 
     if (in_vector_d != NULL) {
         cudaFree(in_vector_d);
@@ -195,6 +202,7 @@ void diag_device_operator<T, Matrix>::apply(RCvector<T>& V)
         double alpha = 1.0;
         double beta = 0.0;
 
+        #ifdef USE_MKL
     	mkl_dcsrmv(
     		&transa,
     		&size,
@@ -208,12 +216,15 @@ void diag_device_operator<T, Matrix>::apply(RCvector<T>& V)
     		V.vData.data(),
     		&beta,
     		out_vectors_h);
+        #else
+        #endif
     }
     else if constexpr (std::is_same<T, CPX>::value) {
 
         T alpha = CPX(1.0, 0.0);
         T beta = CPX(0.0, 0.0);
     
+        #ifdef USE_MKL
     	mkl_zcsrmv(
     		&transa,
     		&size,
@@ -227,7 +238,10 @@ void diag_device_operator<T, Matrix>::apply(RCvector<T>& V)
     		(MKL_Complex16*)V.vData.data(),
     		(MKL_Complex16*)&beta,
     		(MKL_Complex16*)out_vectors_h);
+        #else
+        #endif
     }
+
 
     #pragma omp parallel for
     for (int i = 0; i < size; i++) {
