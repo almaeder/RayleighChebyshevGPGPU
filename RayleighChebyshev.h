@@ -163,11 +163,8 @@
 #include <map>
 #include <algorithm>
 
-#include "SCC_LapackMatrix.h"
-#include "SCC_LapackMatrixRoutines.h"
-
-#include "SCC_LapackMatrixCmplx16.h"
-#include "SCC_LapackMatrixRoutinesCmplx16.h"
+#include "LapackInterface/dsyev.h"
+#include "LapackInterface/zhpevx.h"
 
 #include "RC_Types.h"
 
