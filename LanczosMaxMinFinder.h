@@ -79,15 +79,9 @@
 
 extern "C" {
     #ifdef USE_MKL
-    #include <mkl_blas.h>
-    #include <mkl_cblas.h>
     #include <mkl_lapacke.h>
-    #include <mkl_lapack.h>
     #else
-    //#include <blas.h>
-    #include <cblas.h>
     #include <lapacke.h>
-    #include <lapack.h>
     #endif
 }
 
@@ -631,14 +625,10 @@ std::vector<double>  getLargestSymTriEigValues(RC_INT nValues, std::vector<doubl
     RC_INT*   iblock = new RC_INT[N];
     RC_INT*   isplit = new RC_INT[N];
 
-    double* work   = new double[4*N];   // work array
-    RC_INT*  iwork   = new RC_INT[3*N];     // work array 
-
     RC_INT   info;
 
-    dstebz(&range, &order, &n, &vLower, &vUpper, &iLower, &iUpper,
-        &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
-        &info);
+    info = LAPACKE_dstebz(range, order, n, vLower, vUpper, iLower, iUpper,
+        abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit);
 
     /* extract return eigenvalues */
 
@@ -649,8 +639,6 @@ std::vector<double>  getLargestSymTriEigValues(RC_INT nValues, std::vector<doubl
 
 	delete [] iblock;
 	delete [] isplit;
-	delete [] work;
-	delete [] iwork;
 
 	return eValsReturn;
 }
@@ -688,14 +676,10 @@ std::vector<double>  getLowestSymTriEigValues(RC_INT nValues, std::vector<double
     RC_INT*   iblock = new RC_INT[N];
     RC_INT*   isplit = new RC_INT[N];
 
-    double* work   = new double[4*N];   // work array
-    RC_INT*  iwork   = new RC_INT[3*N];     // work array 
-
     RC_INT   info;
 
-    dstebz(&range, &order, &n, &vLower, &vUpper, &iLower, &iUpper,
-        &abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit, work, iwork, 
-        &info);
+    info = LAPACKE_dstebz(range, order, n, vLower, vUpper, iLower, iUpper,
+        abstol, dPtr, uPtr, &mFound, &nsplit, ePtr, iblock, isplit);
 
     /* extract return eigenvalues */
 
@@ -706,8 +690,6 @@ std::vector<double>  getLowestSymTriEigValues(RC_INT nValues, std::vector<double
 
 	delete [] iblock;
 	delete [] isplit;
-	delete [] work;
-	delete [] iwork;
 
 	return eValsReturn;
 }
