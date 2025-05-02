@@ -195,58 +195,26 @@ template <typename T, typename Matrix>
 void diag_device_operator<T, Matrix>::apply(RCvector<T>& V)
 {
 
-    char transa = 'N';
+    cudaErrchk(cudaMemcpy(in_vector_d, V.vData.data(), size * sizeof(T), cudaMemcpyHostToDevice));
 
-    if constexpr (std::is_same<T, double>::value) {
+    T alpha = CPX(1.0, 0.0);
+    T beta = CPX(0.0, 0.0);
 
-        double alpha = 1.0;
-        double beta = 0.0;
+    cusparseErrchk(cusparseSpMV(
+        handle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        &alpha,
+        spMatDescr,
+        in_vector_desc,
+        &beta,
+        out_vector_desc,
+        CUDA_C_64F,
+        CUSPARSE_SPMV_ALG_DEFAULT,
+        buffer_spmv_d
+    ));
 
-        #ifdef USE_MKL
-    	mkl_dcsrmv(
-    		&transa,
-    		&size,
-    		&size,
-    		&alpha,
-    		matdescra,
-    		data,
-    		indices,
-    		indptr,
-    		indptr + 1,
-    		V.vData.data(),
-    		&beta,
-    		out_vectors_h);
-        #else
-        #endif
-    }
-    else if constexpr (std::is_same<T, CPX>::value) {
+    cudaErrchk(cudaMemcpy(V.vData.data(), out_vector_d, size * sizeof(T), cudaMemcpyDeviceToHost));
 
-        T alpha = CPX(1.0, 0.0);
-        T beta = CPX(0.0, 0.0);
-    
-        #ifdef USE_MKL
-    	mkl_zcsrmv(
-    		&transa,
-    		&size,
-    		&size,
-    		(MKL_Complex16*)&alpha,
-    		matdescra,
-    		(MKL_Complex16*)data,
-    		indices,
-    		indptr,
-    		indptr + 1,
-    		(MKL_Complex16*)V.vData.data(),
-    		(MKL_Complex16*)&beta,
-    		(MKL_Complex16*)out_vectors_h);
-        #else
-        #endif
-    }
-
-
-    #pragma omp parallel for
-    for (int i = 0; i < size; i++) {
-        V.vData[i] = out_vectors_h[i];
-    }
 
 }
 

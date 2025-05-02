@@ -71,6 +71,8 @@ class diag_device_operator
 	cusparseDnMatDescr_t in_vectors_desc = NULL;
 	cusparseDnMatDescr_t out_vectors_desc = NULL;
 
+
+
     // spmm buffers
 	size_t bufferSize_spmv;
 	size_t bufferSize_spmm;
