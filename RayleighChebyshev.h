@@ -172,12 +172,15 @@
 #include "LanczosCpolyOperator.h" // Chebyshev polynomial based filter polynomial operator
 #include "LanczosMaxMinFinder.h"
 
-#include <cusolverDn.h>
-#include <cuda_runtime.h>
-#include "cudaErrchk.h"
-#include <cublas_v2.h>
 #include <complex>
 #include <type_traits>
+
+#ifdef GPU
+// include cuda runtime
+#include "cudaErrchk.h"
+#include <cuda_runtime.h>
+#endif
+
 
 #ifndef RAYLEIGH_CHEBYSHEV_LM_
 #define RAYLEIGH_CHEBYSHEV_LM_
@@ -1064,6 +1067,9 @@ protected:
                 randOp.randomize(mArray);
             }
 
+
+            mArray.host_to_device_copy();
+
             startTimer();
 
             // Orthogonalize working subspace (mArray)
@@ -1074,11 +1080,10 @@ protected:
             //
 
 
-            mArray.host_to_device_copy();
             mArray.orthogonalize();
 
             incrementTime("ortho");
-            incrementCount("ortho", 2);
+            incrementCount("ortho", 1);
 
             lambdaStar = maxEigValue;
             eigDiffRatio = 1.0;
@@ -1987,15 +1992,21 @@ protected:
     void startTimer()
     {
 #ifdef TIMING_
+        #ifdef GPU
         cudaErrchk(cudaDeviceSynchronize());
+        #endif
         timer.start();
 #endif
     }
 
     void incrementTime(const std::string &timedValue)
     {
+
+
 #ifdef TIMING_
+        #ifdef GPU
         cudaErrchk(cudaDeviceSynchronize());
+        #endif
         timer.stop();
         timeValue[timedValue] += timer.getSecElapsedTime();
 #endif

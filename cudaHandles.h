@@ -13,6 +13,7 @@ class cudaHandles {
         // Member variables
         cublasHandle_t cublas_handle = NULL;
         cusolverDnHandle_t cusolverDn_handle = NULL;
+        cusparseHandle_t cusparse_handle = NULL;
 
     private:
     
@@ -27,6 +28,7 @@ class cudaHandles {
             // Initialize the handles
             cublasErrchk(cublasCreate(&cublas_handle));
             cusolverErrchk(cusolverDnCreate(&cusolverDn_handle));
+            cusparseErrchk(cusparseCreate(&cusparse_handle));
 
         }
     
@@ -34,6 +36,7 @@ class cudaHandles {
             // Initialize the handles
             cublasErrchk(cublasDestroy(cublas_handle));
             cusolverErrchk(cusolverDnDestroy(cusolverDn_handle));
+            cusparseErrchk(cusparseDestroy(cusparse_handle));
 
         }
 

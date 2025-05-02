@@ -103,8 +103,6 @@
 
 #include <cmath>
 #include "LanczosCpoly.h"
-#include "cuda_kernels.h"
-#include "cudaErrchk.h"
 
 #ifndef LANCZOS_C_POLY_OPERATOR_LM_
 #define LANCZOS_C_POLY_OPERATOR_LM_

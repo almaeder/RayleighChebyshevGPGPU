@@ -50,7 +50,8 @@ extern "C" {
 
 #define RC_INT int
 
-
+#ifndef CBLAS_TRANSFROM
+#define CBLAS_TRANSFROM
 inline CBLAS_TRANSPOSE charToCblasTranspose(char transChar)
 {
     switch (transChar)
@@ -78,7 +79,7 @@ inline CBLAS_LAYOUT charToCblasLayout(char layoutChar)
             throw std::invalid_argument("Invalid layout character");
     }
 }
-
+#endif
 
 #endif /* SCC_LAPACKHEADERS_H_ */
 
